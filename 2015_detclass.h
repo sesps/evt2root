@@ -4,7 +4,8 @@
 using namespace std;
 
 #define MaxHits 416
-#define MaxCaenHits 100
+#define MaxCaenHits 500
+#define MaxMesyHits 200
 ////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////
 class ASICHit {
@@ -41,6 +42,25 @@ public:
 	    Nhits = 0;
 
             for (Int_t i=0; i<MaxCaenHits;i++) {
+              ID[i] = 0;
+              ChNum[i] = 0;
+              Data[i]  = 0;
+           }
+         };
+};
+////////////////////////////////////////////////////////
+class MesyHit {
+//This class is for MesyTech hit
+public:
+	MesyHit(){};
+	Int_t Nhits,ID[MaxMesyHits],ChNum[MaxMesyHits];
+        Int_t Data[MaxMesyHits];
+
+        void ResetMesyHit()
+	{
+	    Nhits = 0;
+
+            for (Int_t i=0; i<MaxMesyHits;i++) {
               ID[i] = 0;
               ChNum[i] = 0;
               Data[i]  = 0;
