@@ -9,7 +9,7 @@
 // 
 // Adopted & tested for the NSCLDAQ11 version.
 //
-// to run it: root -l evt2root.C++
+// to run it: root -l evt2root_NSCL11.C++
 // make sure your .evt files are included in the data_files.list
 // 
 // Nabin, Dev, DSG, KTM et.al. // December 2015.
@@ -72,7 +72,6 @@ TH1I* hCaenADC[5][32];
 TH1I* hCaenTDC[5][32];
 TH1I* HitPattern_MB1;
 TH1I* HitPattern_MB2;
-
 TH2I* ChanEn_MB1;
 TH2I* ChanEn_MB2;
 TH2I* ChanT_MB1;
@@ -98,14 +97,14 @@ CAENHit TDC;
 ////////////////////////////////////////////////////////
 //- Main function -------------------------------------------------------------  
 int evt2root_NSCL11(){
-//int main(){
+
   gROOT->Reset();
 
   cout << "==============================================================================" <<endl;
   cout << "evt2root: Takes .evt files from a list and converts the data into ROOT format." <<endl;
   cout << "==============================================================================" <<endl;
 
-  int unsigned buflen = 26656;
+  const int unsigned buflen = 26656;
   char buffer[buflen]; 
 
   int unsigned type;
@@ -200,7 +199,7 @@ int evt2root_NSCL11(){
   ListEVT >> run_number;
 
   //Loop over files in the data file list.
-  while(!ListEVT.eof()){
+  while(!ListEVT.eof()) {
 
     if (evtfile.is_open()) cout << "  * Problem previous file not closed!" << endl;
 
@@ -269,18 +268,15 @@ int evt2root_NSCL11(){
       case 1:
 	BufferPhysics++;
 	ReadPhysicsBuffer();	
-	break; //end of physics buffer	
-	
-      }//end switch(type)      
-
+	break; //end of physics buffer		
+      }//end switch(type)  
     } //end for(;;) over evtfile
     ////---------------------------------------------------------------------------------
     
     evtfile.close();
     evtfile.clear(); // clear event status in case we had a bad file
 
-    ListEVT >> run_number;
-      
+    ListEVT >> run_number;      
   }
 
   cout << setprecision(3);
@@ -292,7 +288,6 @@ int evt2root_NSCL11(){
   fileR = new TFile(ROOTFile,"RECREATE");  
   // DataTree->Write();
   RootObjects->Write();
-  // fileR->Write();
   fileR->Close();	
   
   return 1;
@@ -309,18 +304,13 @@ void ReadPhysicsBuffer(){
   TotEvents += Nevents;
 
   for (unsigned int ievent=0;ievent<Nevents;ievent++) {
-
     Si.ResetASICHit();
     ADC.ResetCAENHit();
     TDC.ResetCAENHit();
 
     //create pointer inside of each  event
     unsigned short * fpoint = epoint;
-		    
     words = *fpoint++;
-
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
     int XLMdata1 = *fpoint++;
   
     if (XLMdata1==0xaaaa) {
@@ -333,7 +323,7 @@ void ReadPhysicsBuffer(){
 
       fpoint+=5;
 
-      for (int istrip=0; istrip<Nstrips; istrip++) {
+      for (int istrip=0;istrip<Nstrips;istrip++) {
 	//cout << "istrip=" << istrip << endl;
 	unsigned short *gpoint = fpoint;
 	unsigned short id = *gpoint;
@@ -356,12 +346,12 @@ void ReadPhysicsBuffer(){
 	  if (chipNum == 9 || chipNum == 10 ) energy =16384-energy;
 	  if (chipNum == 11 || chipNum == 12 ) energy =16384-energy;
 	  if (chipNum == 13 || chipNum == 14 ) energy =16384-energy;
-	  //============================================================================
+	  //============================================================================   
 
 	  HitPattern_MB1->Fill(chipNum*16-16+chanNum);
 	  ChanEn_MB1->Fill(chipNum*16-16+chanNum,energy);
 	  ChanT_MB1->Fill(chipNum*16-16+chanNum,time);
-           
+        
           Si.MBID[Si.Nhits]=1;
           Si.CBID[Si.Nhits]=chipNum;
           Si.ChNum[Si.Nhits]=chanNum;
@@ -372,9 +362,7 @@ void ReadPhysicsBuffer(){
 	  {
 	    
 	  } 
-
 	fpoint +=3;
-		
       }// end for(isrtip)
     }//end if(XLMdata1)	
   
@@ -397,7 +385,7 @@ void ReadPhysicsBuffer(){
       unsigned short Nstrips = *fpoint;	      
       fpoint+=5;
 	      
-      for (int istrip=0;istrip<Nstrips;istrip++){
+      for (int istrip=0;istrip<Nstrips;istrip++) {
 	unsigned short *gpoint = fpoint;
 	unsigned short id = *gpoint;
 	unsigned short chipNum = (id&0x1FE0)>>5;
@@ -417,11 +405,11 @@ void ReadPhysicsBuffer(){
 	  if (chipNum == 9 || chipNum == 10 ) energy =16384-energy;			
 	  if (chipNum == 11 || chipNum == 12 ) energy =energy;
 	  //===========================================================================
-		  
+
 	  HitPattern_MB2->Fill(chipNum*16-16+chanNum);
 	  ChanEn_MB2->Fill(chipNum*16-16+chanNum,energy);
 	  ChanT_MB2->Fill(chipNum*16-16+chanNum,time);
-                  
+	 
           Si.MBID[Si.Nhits]=2;
           Si.CBID[Si.Nhits]=chipNum;
           Si.ChNum[Si.Nhits]=chanNum;
@@ -446,8 +434,7 @@ void ReadPhysicsBuffer(){
 
       if(fpoint>epoint+words) break;
     }
-   
-    	
+       	
     if (CAEN==0xcccc) CAENCounter++;
     	    
     while (fpoint < epoint + words){
@@ -505,7 +492,7 @@ void ReadPhysicsBuffer(){
             TDC.Data[TDC.Nhits++] = dat;
 	  }	
 
-	  if (chn<32) data[chn] = dat; 
+	  if (chn<32) data[chn] = dat;   
 	  
 	}// end of if (geo == GEOaddress) {	
       }//end of for(i=0;i<chanCount;i++)
@@ -522,6 +509,8 @@ void ReadPhysicsBuffer(){
 	EOB_NEvents = EOB_l+(EOB_h&0x00ff)*65536+1;
       } 
       
+    
+
       while ((gpoint < epoint + words )&&(*gpoint==0xffff)){
 	gpoint ++;
       }
@@ -537,7 +526,5 @@ void ReadPhysicsBuffer(){
     DataTree->Fill();
 
   }//end for over events
-
 }//end of void ReadPhysicsBuffer()
-
-/////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
