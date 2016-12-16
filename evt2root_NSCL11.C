@@ -136,6 +136,7 @@ int evt2root_NSCL11(){
 
   // Data Tree
   DataTree = new TTree("DataTree","DataTree");
+  //DataTree->SetMaxTreeSize(1900000000LL);
 
   DataTree->Branch("Si.Nhits",&Si.Nhits,"SiNhits/I");
   DataTree->Branch("Si.MBID",Si.MBID,"MBID[SiNhits]/I");
@@ -467,17 +468,19 @@ void ReadPhysicsBuffer(){
 	  //if((GEOaddress == 2 && chn<32) || (GEOaddress == 3 && chn<32) || (GEOaddress == 17 && chn<32)){
 	  //for IC GEOaddress 3 && chn ==24 && chn ==28
 
+	  ///////////////////////////////////////////	  
 	  ////for PC & IC
-	  if((GEOaddress == 2 && chn<32) || (GEOaddress == 3 && chn<16)){
-	//if((GEOaddress == 2 && chn<32) || (GEOaddress == 3 && chn<32)){
+	//if((GEOaddress == 2 && chn<32) || (GEOaddress == 3 && chn<16)){
+	  if((GEOaddress == 2 && chn<32) || (GEOaddress == 3 && chn<32)){
 
             ADC.ID[ADC.Nhits] = GEOaddress;
             ADC.ChNum[ADC.Nhits] = chn;
-	     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	    if (ADC.Nhits >=MaxCaenHits){
+	    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	    //// when you run without CAEN data i.e. Si-Alpha cal in vacuum
+	    //// turn this part off
+	    if (ADC.Nhits >= MaxCaenHits) {
 	      continue;
 	    }
-	    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	    if (ov) {
 	      ADC.Data[ADC.Nhits++] = 5000;
 	    } else if (un) {
@@ -490,16 +493,12 @@ void ReadPhysicsBuffer(){
 	  ///////////////////////////////////////////
 	  //for RF-time & MCPs	  
 
-	  if (GEOaddress == 12 && (chn == 0 || chn == 7)) {
-	//if (GEOaddress == 12 && chn<32) {
-	    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	    if (TDC.Nhits >=MaxCaenHits){
+	//if (GEOaddress == 12 && (chn == 0 || chn == 7)) {
+	  if (GEOaddress == 12 && chn<32) {
+	    if (TDC.Nhits >= MaxCaenHits){
 	      continue;
 	    }
-	    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	    //TDC.ID[TDC.Nhits] = GEOaddress; 
-	    //then be careful, change in the Main Files for TDC_ID[n]==2 ->12
-            TDC.ID[TDC.Nhits] = GEOaddress-10;	   
+	    TDC.ID[TDC.Nhits] = GEOaddress-10;	   
             TDC.ChNum[TDC.Nhits] = chn;
             TDC.Data[TDC.Nhits++] = dat;
 	  }	
@@ -537,7 +536,6 @@ void ReadPhysicsBuffer(){
       ADC.ResetCAENHit();
       Si.ResetASICHit();
     }
-   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     DataTree->Fill();
 
   }//end for over events

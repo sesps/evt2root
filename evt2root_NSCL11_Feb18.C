@@ -473,7 +473,7 @@ void ReadPhysicsBuffer(){
 
             ADC.ID[ADC.Nhits] = GEOaddress;
             ADC.ChNum[ADC.Nhits] = chn;
-	    //000000000000000000000000000000000000000000000000000000000000000
+	    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	    //// when you run without CAEN data i.e. Si-Alpha cal in vacuum
 	    //// turn this part off
 	    if (ADC.Nhits >= MaxCaenHits) {
@@ -495,7 +495,7 @@ void ReadPhysicsBuffer(){
 	    if (TDC.Nhits >= MaxCaenHits){
 	      continue;
 	    }
-            TDC.ID[TDC.Nhits] = GEOaddress - 10;
+	    TDC.ID[TDC.Nhits] = GEOaddress-10;	   
             TDC.ChNum[TDC.Nhits] = chn;
             TDC.Data[TDC.Nhits++] = dat;
 	  }	
