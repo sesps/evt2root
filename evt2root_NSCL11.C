@@ -336,6 +336,7 @@ void ReadPhysicsBuffer(){
 
 	//========================MB1===============================================
 	time = time;
+	//time = 16384-time;
 	if(chanNum<16){ 
 	  if (chipNum == 1 || chipNum == 2 ) energy =16384-energy;
 	  if (chipNum == 3 || chipNum == 4 ) energy =energy;				
@@ -349,7 +350,9 @@ void ReadPhysicsBuffer(){
 	  HitPattern_MB1->Fill(chipNum*16-16+chanNum);
 	  ChanEn_MB1->Fill(chipNum*16-16+chanNum,energy);
 	  ChanT_MB1->Fill(chipNum*16-16+chanNum,time);
-        
+	  if (Si.Nhits >= MaxCaenHits){
+	    continue;
+	  }
           Si.MBID[Si.Nhits]=1;
           Si.CBID[Si.Nhits]=chipNum;
           Si.ChNum[Si.Nhits]=chanNum;
@@ -395,6 +398,7 @@ void ReadPhysicsBuffer(){
 
 	//==============================MB2========================================
 	time = time;
+	//time = 16384-time;
 	if(chanNum<16){ 
 	  if (chipNum == 1 || chipNum == 2 ) energy =16384-energy;
 	  if (chipNum == 3 || chipNum == 4 ) energy =energy;	
@@ -407,7 +411,9 @@ void ReadPhysicsBuffer(){
 	  HitPattern_MB2->Fill(chipNum*16-16+chanNum);
 	  ChanEn_MB2->Fill(chipNum*16-16+chanNum,energy);
 	  ChanT_MB2->Fill(chipNum*16-16+chanNum,time);
-	 
+	  if (Si.Nhits >= MaxCaenHits){
+	    continue;
+	  }    
           Si.MBID[Si.Nhits]=2;
           Si.CBID[Si.Nhits]=chipNum;
           Si.ChNum[Si.Nhits]=chanNum;
@@ -472,15 +478,15 @@ void ReadPhysicsBuffer(){
 	  ////for PC & IC
 	//if((GEOaddress == 2 && chn<32) || (GEOaddress == 3 && chn<16)){
 	  if((GEOaddress == 2 && chn<32) || (GEOaddress == 3 && chn<32)){
-
-            ADC.ID[ADC.Nhits] = GEOaddress;
-            ADC.ChNum[ADC.Nhits] = chn;
+	//if((GEOaddress == 2 && chn<32) || (GEOaddress == 3 && chn<16) || (GEOaddress == 3 && (chn==24 || chn==28))){
 	    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	    //// when you run without CAEN data i.e. Si-Alpha cal in vacuum
 	    //// turn this part off
 	    if (ADC.Nhits >= MaxCaenHits) {
 	      continue;
 	    }
+	    ADC.ID[ADC.Nhits] = GEOaddress;
+            ADC.ChNum[ADC.Nhits] = chn;
 	    if (ov) {
 	      ADC.Data[ADC.Nhits++] = 5000;
 	    } else if (un) {
@@ -493,13 +499,16 @@ void ReadPhysicsBuffer(){
 	  ///////////////////////////////////////////
 	  //for RF-time & MCPs	  
 
-	//if (GEOaddress == 12 && (chn == 0 || chn == 7)) {
-	  if (GEOaddress == 12 && chn<32) {
+	  if (GEOaddress == 12 && (chn == 0 || chn == 7)) {
+	//if (GEOaddress == 12 && chn<32) {
 	    if (TDC.Nhits >= MaxCaenHits){
 	      continue;
 	    }
 	    TDC.ID[TDC.Nhits] = GEOaddress-10;	   
             TDC.ChNum[TDC.Nhits] = chn;
+	    if (chn==7 && dat==1026){
+	      //cout << TDC.Nhits << "  " << ADC.Nhits << "  " << Si.Nhits << endl;
+	    }
             TDC.Data[TDC.Nhits++] = dat;
 	  }	
 
@@ -536,7 +545,9 @@ void ReadPhysicsBuffer(){
       ADC.ResetCAENHit();
       Si.ResetASICHit();
     }
-    DataTree->Fill();
+    if (Si.Nhits>0){
+      DataTree->Fill();
+    }
 
   }//end for over events
 }//end of void ReadPhysicsBuffer()
