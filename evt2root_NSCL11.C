@@ -204,9 +204,10 @@ int evt2root_NSCL11(){
     if (evtfile.is_open()) cout << "  * Problem previous file not closed!" << endl;
 
     endOfRun=0;
-    fileProblem = 0;    
-   
-    string name = data_dir + Form("run-%.4d-00.evt", run_number);
+    fileProblem = 0;   
+
+    for(int seg_number=0;seg_number<3;seg_number++) { 
+      string name = data_dir + Form("run-%.4d-%.2d.evt",run_number,seg_number);
     cout << "  Data file: " << name << endl;
 
     //open evt file
@@ -275,8 +276,9 @@ int evt2root_NSCL11(){
     
     evtfile.close();
     evtfile.clear(); // clear event status in case we had a bad file
-
-    ListEVT >> run_number;      
+    
+    }//end of segment loop
+    ListEVT >> run_number;
   }
 
   cout << setprecision(3);
@@ -477,8 +479,8 @@ void ReadPhysicsBuffer(){
 	  ///////////////////////////////////////////	  
 	  ////for PC & IC
 	//if((GEOaddress == 2 && chn<32) || (GEOaddress == 3 && chn<16)){
-	  if((GEOaddress == 2 && chn<32) || (GEOaddress == 3 && chn<32)){
-	//if((GEOaddress == 2 && chn<32) || (GEOaddress == 3 && chn<16) || (GEOaddress == 3 && (chn==24 || chn==28))){
+	//if((GEOaddress == 2 && chn<32) || (GEOaddress == 3 && chn<32)){
+	  if((GEOaddress == 2 && chn<32) || (GEOaddress == 3 && chn<16) || (GEOaddress == 3 && (chn==24 || chn==28))){
 	    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	    //// when you run without CAEN data i.e. Si-Alpha cal in vacuum
 	    //// turn this part off
