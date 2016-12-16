@@ -10,7 +10,7 @@
 // Adopted & tested for the NSCLDAQ11 version.
 //
 // to run it: root -l evt2root_NSCL11.C++
-// make sure your .evt files are included in the data_files.list
+// make sure your .evt files are included in the evt_files.list
 // 
 // Nabin, Dev, DSG, KTM et.al. // December 2015.
 //
@@ -54,7 +54,7 @@ int unsigned buflen = 26656;
 //char buffer[buflen];
 char buffer[26656];
 
-const string files_list = "data_files.list";
+const string files_list = "evt_files.list";
 
 // Global variables
 TFile* fileR;
@@ -122,11 +122,8 @@ int evt2root_NSCL11_Nabin021716(){
   // ROOT output file
   ROOTFile = new char [OutputROOTFile.size()+1];
   strcpy (ROOTFile, OutputROOTFile.c_str());
-
   fileR = new TFile(ROOTFile,"RECREATE");  
-  // Data Tree
   DataTree = new TTree("DataTree","DataTree");
-  //DataTree->SetMaxTreeSize(1900000000LL);
 
   DataTree->Branch("Si.Nhits",&Si.Nhits,"SiNhits/I");
   DataTree->Branch("Si.MBID",Si.MBID,"MBID[SiNhits]/I");
@@ -144,19 +141,18 @@ int evt2root_NSCL11_Nabin021716(){
   DataTree->Branch("TDC.ID",TDC.ID,"ID[TDCNhits]/I");
   DataTree->Branch("TDC.ChNum",TDC.ChNum,"ChNum[TDCNhits]/I");
   DataTree->Branch("TDC.Data",TDC.Data,"Data[TDCNhits]/I");
-
-
-   // Histograms
+  
+  // Histograms
   HitPattern_MB1 = new TH1I("HitPattern_MB1","",288,0,288);
   HitPattern_MB2 = new TH1I("HitPattern_MB2","",288,0,288);
   ChanEn_MB1 = new TH2I("EnVsCh_MB1","",288,0,288,4096,0,16384);
   ChanEn_MB2 = new TH2I("EnVsCh_MB2","",288,0,288,4096,0,16384);
   ChanT_MB1 = new TH2I("TiVsCh_MB1","",288,0,288,4096,0,16384);
   ChanT_MB2 = new TH2I("TiVsCh_MB2","",288,0,288,4096,0,16384);  
-   //List of root objects.
+
+  //List of root objects.
   RootObjects = new TObjArray();
   RootObjects->Add(DataTree);
- 
   RootObjects->Add(HitPattern_MB1);
   RootObjects->Add(HitPattern_MB2);
   RootObjects->Add(ChanEn_MB1);
@@ -185,7 +181,7 @@ int evt2root_NSCL11_Nabin021716(){
   ListEVT >> run_number;
 
   //Loop over files in the data file list.
-  while(!ListEVT.eof()){
+  while(!ListEVT.eof()) {
 
     if (evtfile.is_open()) cout << "  * Problem previous file not closed!" << endl;
 
@@ -262,8 +258,7 @@ int evt2root_NSCL11_Nabin021716(){
     evtfile.close();
     evtfile.clear(); // clear event status in case we had a bad file
 
-    ListEVT >> run_number;
-      
+    ListEVT >> run_number;      
   }
 
   cout << setprecision(3);
@@ -272,15 +267,13 @@ int evt2root_NSCL11_Nabin021716(){
   cout << "Number of events based on buffer headers: " << TotEvents << endl; 
   cout << "Number of events based on event counter: " <<  EventCounter << endl;
     
-  //fileR = new TFile(ROOTFile,"RECREATE");  
-  // DataTree->Write();
   RootObjects->Write();
-  // fileR->Write();
   fileR->Close();	
   
   return 1;
 
 }//end of evt2root
+
 ////////////////////////////////////////////////////////////////////////////
 // Function where the root objects are filled.
 ////////////////////////////////////////////////////////////////////////////
@@ -291,18 +284,13 @@ void ReadPhysicsBuffer(){
   TotEvents += Nevents;
 
   for (unsigned int ievent=0;ievent<Nevents;ievent++) {
-
     Si.ResetASICHit();
     ADC.ResetCAENHit();
     TDC.ResetCAENHit();
 
     //create pointer inside of each  event
     unsigned short * fpoint = epoint;
-		    
     words = *fpoint++;
-
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
     int XLMdata1 = *fpoint++;
   
     if (XLMdata1==0xaaaa) {
@@ -315,7 +303,7 @@ void ReadPhysicsBuffer(){
 
       fpoint+=5;
 
-      for (int istrip=0; istrip<Nstrips; istrip++) {
+      for (int istrip=0;istrip<Nstrips;istrip++) {
 	//cout << "istrip=" << istrip << endl;
 	unsigned short *gpoint = fpoint;
 	unsigned short id = *gpoint;
@@ -343,7 +331,6 @@ void ReadPhysicsBuffer(){
 	  HitPattern_MB1->Fill(chipNum*16-16+chanNum);
 	  ChanEn_MB1->Fill(chipNum*16-16+chanNum,energy);
 	  ChanT_MB1->Fill(chipNum*16-16+chanNum,time);
-
         
           Si.MBID[Si.Nhits]=1;
           Si.CBID[Si.Nhits]=chipNum;
@@ -355,9 +342,7 @@ void ReadPhysicsBuffer(){
 	  {
 	    
 	  } 
-
 	fpoint +=3;
-		
       }// end for(isrtip)
     }//end if(XLMdata1)	
   
@@ -380,7 +365,7 @@ void ReadPhysicsBuffer(){
       unsigned short Nstrips = *fpoint;	      
       fpoint+=5;
 	      
-      for (int istrip=0;istrip<Nstrips;istrip++){
+      for (int istrip=0;istrip<Nstrips;istrip++) {
 	unsigned short *gpoint = fpoint;
 	unsigned short id = *gpoint;
 	unsigned short chipNum = (id&0x1FE0)>>5;
@@ -429,8 +414,7 @@ void ReadPhysicsBuffer(){
 
       if(fpoint>epoint+words) break;
     }
-   
-    	
+       	
     if (CAEN==0xcccc) CAENCounter++;
     	    
     while (fpoint < epoint + words){
@@ -529,7 +513,5 @@ void ReadPhysicsBuffer(){
     DataTree->Fill();
 
   }//end for over events
-
 }//end of void ReadPhysicsBuffer()
-
-/////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
