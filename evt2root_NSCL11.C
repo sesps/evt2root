@@ -64,23 +64,12 @@ TObjArray* RootObjects;
 float CalParamF[128][3];
 float CalParamB[128][3];
 
-TH1I* hE1[9][32];
-TH1I* hT1[9][32];
-TH1I* hE2[9][32];
-TH1I* hT2[9][32];
-TH1I* hCaenADC[5][32];
-TH1I* hCaenTDC[5][32];
 TH1I* HitPattern_MB1;
 TH1I* HitPattern_MB2;
-
 TH2I* ChanEn_MB1;
 TH2I* ChanEn_MB2;
 TH2I* ChanT_MB1;
 TH2I* ChanT_MB2;
-
-TH1I* CMonTot;
-TH1I* CMonLive;
-
 
 int unsigned Nevents;
 int unsigned TotEvents=0;
@@ -88,7 +77,6 @@ int unsigned words;
 unsigned short *point,*epoint;
 
 Int_t EventCounter = 0;
-int unsigned EOB_NEvents=0;
 int unsigned ASICsCounter=0;
 int unsigned CAENCounter=0;
 
@@ -134,12 +122,10 @@ int evt2root_NSCL11(){
   // ROOT output file
   ROOTFile = new char [OutputROOTFile.size()+1];
   strcpy (ROOTFile, OutputROOTFile.c_str());
+  fileR = new TFile(ROOTFile,"RECREATE");
 
-//  fileR = new TFile(ROOTFile,"RECREATE");  
-  fileR = new TFile(ROOTFile,"RECREATE");  
   // Data Tree
   DataTree = new TTree("DataTree","DataTree");
-  //DataTree->SetMaxTreeSize(1900000000LL);
 
   DataTree->Branch("Si.Nhits",&Si.Nhits,"SiNhits/I");
   DataTree->Branch("Si.MBID",Si.MBID,"MBID[SiNhits]/I");
@@ -159,30 +145,23 @@ int evt2root_NSCL11(){
   DataTree->Branch("TDC.Data",TDC.Data,"Data[TDCNhits]/I");
   
   // Histograms
-  
   HitPattern_MB1 = new TH1I("HitPattern_MB1","",288,0,288);
   HitPattern_MB2 = new TH1I("HitPattern_MB2","",288,0,288);
   ChanEn_MB1 = new TH2I("EnVsCh_MB1","",288,0,288,4096,0,16384);
   ChanEn_MB2 = new TH2I("EnVsCh_MB2","",288,0,288,4096,0,16384);
   ChanT_MB1 = new TH2I("TiVsCh_MB1","",288,0,288,4096,0,16384);
-  ChanT_MB2 = new TH2I("TiVsCh_MB2","",288,0,288,4096,0,16384);
-  
-  CMonTot  = new TH1I("MonTot","",300,0,300);
-  CMonLive = new TH1I("MonLive","",300,0,300);
-  
+  ChanT_MB2 = new TH2I("TiVsCh_MB2","",288,0,288,4096,0,16384);  
+
   //List of root objects.
   RootObjects = new TObjArray();
   RootObjects->Add(DataTree);
-  
   RootObjects->Add(HitPattern_MB1);
   RootObjects->Add(HitPattern_MB2);
   RootObjects->Add(ChanEn_MB1);
   RootObjects->Add(ChanEn_MB2);
   RootObjects->Add(ChanT_MB1);
   RootObjects->Add(ChanT_MB2);
-  RootObjects->Add(CMonTot);
-  RootObjects->Add(CMonLive);
-  
+
   string data_dir = "";
 
   //Check if this file exists.
@@ -204,7 +183,7 @@ int evt2root_NSCL11(){
   ListEVT >> run_number;
 
   //Loop over files in the data file list.
-  while(!ListEVT.eof()){
+  while(!ListEVT.eof()) {
 
     if (evtfile.is_open()) cout << "  * Problem previous file not closed!" << endl;
 
@@ -273,18 +252,15 @@ int evt2root_NSCL11(){
       case 1:
 	BufferPhysics++;
 	ReadPhysicsBuffer();	
-	break; //end of physics buffer	
-	
-      }//end switch(type)      
-
+	break; //end of physics buffer		
+      }//end switch(type)  
     } //end for(;;) over evtfile
     ////---------------------------------------------------------------------------------
     
     evtfile.close();
     evtfile.clear(); // clear event status in case we had a bad file
 
-    ListEVT >> run_number;
-      
+    ListEVT >> run_number;      
   }
 
   cout << setprecision(3);
@@ -293,10 +269,7 @@ int evt2root_NSCL11(){
   cout << "Number of events based on buffer headers: " << TotEvents << endl; 
   cout << "Number of events based on event counter: " <<  EventCounter << endl;
     
-  //fileR = new TFile(ROOTFile,"RECREATE");  
-  // DataTree->Write();
   RootObjects->Write();
-  // fileR->Write();
   fileR->Close();	
   
   return 1;
@@ -313,18 +286,13 @@ void ReadPhysicsBuffer(){
   TotEvents += Nevents;
 
   for (unsigned int ievent=0;ievent<Nevents;ievent++) {
-
     Si.ResetASICHit();
     ADC.ResetCAENHit();
     TDC.ResetCAENHit();
 
     //create pointer inside of each  event
     unsigned short * fpoint = epoint;
-		    
     words = *fpoint++;
-
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
     int XLMdata1 = *fpoint++;
   
     if (XLMdata1==0xaaaa) {
@@ -337,7 +305,7 @@ void ReadPhysicsBuffer(){
 
       fpoint+=5;
 
-      for (int istrip=0; istrip<Nstrips; istrip++) {
+      for (int istrip=0;istrip<Nstrips;istrip++) {
 	//cout << "istrip=" << istrip << endl;
 	unsigned short *gpoint = fpoint;
 	unsigned short id = *gpoint;
@@ -352,7 +320,6 @@ void ReadPhysicsBuffer(){
 
 	//========================MB1===============================================
 	time = time;
-	//time = 16384-time;
 	if(chanNum<16){ 
 	  if (chipNum == 1 || chipNum == 2 ) energy =16384-energy;
 	  if (chipNum == 3 || chipNum == 4 ) energy =energy;				
@@ -361,14 +328,12 @@ void ReadPhysicsBuffer(){
 	  if (chipNum == 9 || chipNum == 10 ) energy =16384-energy;
 	  if (chipNum == 11 || chipNum == 12 ) energy =16384-energy;
 	  if (chipNum == 13 || chipNum == 14 ) energy =16384-energy;
-	  //============================================================================
+	  //============================================================================   
 
 	  HitPattern_MB1->Fill(chipNum*16-16+chanNum);
 	  ChanEn_MB1->Fill(chipNum*16-16+chanNum,energy);
 	  ChanT_MB1->Fill(chipNum*16-16+chanNum,time);
-	  if (Si.Nhits >= MaxCaenHits){
-	    continue;
-	  }
+        
           Si.MBID[Si.Nhits]=1;
           Si.CBID[Si.Nhits]=chipNum;
           Si.ChNum[Si.Nhits]=chanNum;
@@ -379,9 +344,7 @@ void ReadPhysicsBuffer(){
 	  {
 	    
 	  } 
-
 	fpoint +=3;
-		
       }// end for(isrtip)
     }//end if(XLMdata1)	
   
@@ -404,7 +367,7 @@ void ReadPhysicsBuffer(){
       unsigned short Nstrips = *fpoint;	      
       fpoint+=5;
 	      
-      for (int istrip=0;istrip<Nstrips;istrip++){
+      for (int istrip=0;istrip<Nstrips;istrip++) {
 	unsigned short *gpoint = fpoint;
 	unsigned short id = *gpoint;
 	unsigned short chipNum = (id&0x1FE0)>>5;
@@ -416,7 +379,6 @@ void ReadPhysicsBuffer(){
 
 	//==============================MB2========================================
 	time = time;
-	//time = 16384-time;
 	if(chanNum<16){ 
 	  if (chipNum == 1 || chipNum == 2 ) energy =16384-energy;
 	  if (chipNum == 3 || chipNum == 4 ) energy =energy;	
@@ -425,13 +387,11 @@ void ReadPhysicsBuffer(){
 	  if (chipNum == 9 || chipNum == 10 ) energy =16384-energy;			
 	  if (chipNum == 11 || chipNum == 12 ) energy =energy;
 	  //===========================================================================
-		  
+
 	  HitPattern_MB2->Fill(chipNum*16-16+chanNum);
 	  ChanEn_MB2->Fill(chipNum*16-16+chanNum,energy);
 	  ChanT_MB2->Fill(chipNum*16-16+chanNum,time);
-	  if (Si.Nhits >= MaxCaenHits){
-	    continue;
-	  }    
+	 
           Si.MBID[Si.Nhits]=2;
           Si.CBID[Si.Nhits]=chipNum;
           Si.ChNum[Si.Nhits]=chanNum;
@@ -456,8 +416,7 @@ void ReadPhysicsBuffer(){
 
       if(fpoint>epoint+words) break;
     }
-   
-    	
+       	
     if (CAEN==0xcccc) CAENCounter++;
     	    
     while (fpoint < epoint + words){
@@ -488,67 +447,53 @@ void ReadPhysicsBuffer(){
 	
 	if (geo == GEOaddress) {
 
-	  ///////////////////////////////////////////	  
-	  ////for PC
+	  ///////////////////////////////////////////	
+	  ////for CsI 17 && mADC 9 && 10;
+	  //if((GEOaddress == 2 && chn<32) || (GEOaddress == 3 && chn<32) || (GEOaddress == 17 && chn<32)){
+	  //for IC GEOaddress 3 && chn ==24 && chn ==28
 
-	  if((GEOaddress == 2 && chn<32) || (GEOaddress == 3 && chn<16) || (GEOaddress == 3 && (chn==24 || chn==28))){
-	    //000000000000000000000000000000000000000000000000000000000000000
-	    //// when you run without CAEN data i.e. Si-Alpha cal in vacuum
-	    //// turn this part off
-	    if (ADC.Nhits >= MaxCaenHits){
+	  ////for PC
+	  if((GEOaddress == 2 && chn<32) || (GEOaddress == 3 && chn<16)){
+
+            ADC.ID[ADC.Nhits] = GEOaddress;
+            ADC.ChNum[ADC.Nhits] = chn;
+	     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	    if (ADC.Nhits >=MaxCaenHits){
 	      continue;
 	    }
-	    ADC.ID[ADC.Nhits] = GEOaddress;
-            ADC.ChNum[ADC.Nhits] = chn;
+	    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	    if (ov) {
 	      ADC.Data[ADC.Nhits++] = 5000;
 	    } else if (un) {
 	      ADC.Data[ADC.Nhits++] = -1000;
 	    } else {
 	      ADC.Data[ADC.Nhits++] = dat;
-	    }
-	    
-	    //if ( !(ov || un) ){
-	    //ADC.Data[ADC.Nhits++] = dat;
-	    //}
-	    //0000000000000000000000000000000000000000000000000000000000000000
-
+	    }	  
 	  }
 
 	  ///////////////////////////////////////////
-	  //for RF-time & MCPs
-	  
+	  //for RF-time & MCPs	  
 
-	  if (GEOaddress == 12 && (chn==0 || chn ==7)) {
-	    if (TDC.Nhits >= MaxCaenHits){
+	  if (GEOaddress == 12 && (chn == 0 || chn == 7)) {
+	    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	    if (TDC.Nhits >=MaxCaenHits){
 	      continue;
 	    }
-            TDC.ID[TDC.Nhits] = GEOaddress - 10;
+	    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	    //TDC.ID[TDC.Nhits] = GEOaddress; 
+	    //then be careful, change in the Main Files for TDC_ID[n]==2 ->12
+            TDC.ID[TDC.Nhits] = GEOaddress-10;	   
             TDC.ChNum[TDC.Nhits] = chn;
-	    if (chn==7 && dat==1026){
-	      //cout << TDC.Nhits << "  " << ADC.Nhits << "  " << Si.Nhits << endl;
-	    }
             TDC.Data[TDC.Nhits++] = dat;
 	  }	
 
-	  if (chn<32) data[chn] = dat; 
+	  if (chn<32) data[chn] = dat;   
 	  
-	  
-	}// end of if (geo == GEOaddress) {	
-      }//end of for(i=0;i<chanCount;i++)
+	}// end of if(geo)	
+      }//end of for(chanCount)
       
-      
-      unsigned short EOB_l = *(gpoint++);
-      unsigned short EOB_h = *(gpoint++);
-      unsigned short EOB_bit;
-      
-      unsigned short geo = (EOB_h&0xf800)>>11;
-      EOB_bit = (EOB_h&0x0400)>>10;
-      
-      if (geo == GEOaddress && EOB_bit) {
-	EOB_NEvents = EOB_l+(EOB_h&0x00ff)*65536+1;
-      } 
-      
+    
+
       while ((gpoint < epoint + words )&&(*gpoint==0xffff)){
 	gpoint ++;
       }
@@ -560,17 +505,15 @@ void ReadPhysicsBuffer(){
     epoint += words+1; // This skips the rest of the event	    
  
     EventCounter++;
-    if ( (ADC.Nhits >= MaxCaenHits) || (Si.Nhits >= MaxHits) || (TDC.Nhits >= MaxCaenHits) ){
+    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    if ( (ADC.Nhits >= MaxCaenHits) || (TDC.Nhits >= MaxCaenHits) || (Si.Nhits >= MaxHits) ){
       TDC.ResetCAENHit();
       ADC.ResetCAENHit();
       Si.ResetASICHit();
     }
-    if (Si.Nhits>0){
-      DataTree->Fill();
-    }
+   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    DataTree->Fill();
 
   }//end for over events
-
 }//end of void ReadPhysicsBuffer()
-
-/////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
