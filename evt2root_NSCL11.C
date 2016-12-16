@@ -94,7 +94,7 @@ int evt2root_NSCL11(){
   cout << "evt2root: Takes .evt files from a list and converts the data into ROOT format." <<endl;
   cout << "==============================================================================" <<endl;
 
-  int unsigned buflen = 26656;
+  const int unsigned buflen = 26656;
   char buffer[buflen]; 
 
   int unsigned type;
