@@ -64,6 +64,12 @@ TObjArray* RootObjects;
 float CalParamF[128][3];
 float CalParamB[128][3];
 
+TH1I* hE1[9][32];
+TH1I* hT1[9][32];
+TH1I* hE2[9][32];
+TH1I* hT2[9][32];
+TH1I* hCaenADC[5][32];
+TH1I* hCaenTDC[5][32];
 TH1I* HitPattern_MB1;
 TH1I* HitPattern_MB2;
 TH2I* ChanEn_MB1;
@@ -71,12 +77,16 @@ TH2I* ChanEn_MB2;
 TH2I* ChanT_MB1;
 TH2I* ChanT_MB2;
 
+TH1I* CMonTot;
+TH1I* CMonLive;
+
 int unsigned Nevents;
 int unsigned TotEvents=0;
 int unsigned words;  
 unsigned short *point,*epoint;
 
 Int_t EventCounter = 0;
+int unsigned EOB_NEvents=0;
 int unsigned ASICsCounter=0;
 int unsigned CAENCounter=0;
 
@@ -150,7 +160,10 @@ int evt2root_NSCL11(){
   ChanEn_MB1 = new TH2I("EnVsCh_MB1","",288,0,288,4096,0,16384);
   ChanEn_MB2 = new TH2I("EnVsCh_MB2","",288,0,288,4096,0,16384);
   ChanT_MB1 = new TH2I("TiVsCh_MB1","",288,0,288,4096,0,16384);
-  ChanT_MB2 = new TH2I("TiVsCh_MB2","",288,0,288,4096,0,16384);  
+  ChanT_MB2 = new TH2I("TiVsCh_MB2","",288,0,288,4096,0,16384);
+  
+  CMonTot  = new TH1I("MonTot","",300,0,300);
+  CMonLive = new TH1I("MonLive","",300,0,300);
 
   //List of root objects.
   RootObjects = new TObjArray();
@@ -161,6 +174,8 @@ int evt2root_NSCL11(){
   RootObjects->Add(ChanEn_MB2);
   RootObjects->Add(ChanT_MB1);
   RootObjects->Add(ChanT_MB2);
+  RootObjects->Add(CMonTot);
+  RootObjects->Add(CMonLive);
 
   string data_dir = "";
 
@@ -452,8 +467,9 @@ void ReadPhysicsBuffer(){
 	  //if((GEOaddress == 2 && chn<32) || (GEOaddress == 3 && chn<32) || (GEOaddress == 17 && chn<32)){
 	  //for IC GEOaddress 3 && chn ==24 && chn ==28
 
-	  ////for PC
+	  ////for PC & IC
 	  if((GEOaddress == 2 && chn<32) || (GEOaddress == 3 && chn<16)){
+	//if((GEOaddress == 2 && chn<32) || (GEOaddress == 3 && chn<32)){
 
             ADC.ID[ADC.Nhits] = GEOaddress;
             ADC.ChNum[ADC.Nhits] = chn;
@@ -475,6 +491,7 @@ void ReadPhysicsBuffer(){
 	  //for RF-time & MCPs	  
 
 	  if (GEOaddress == 12 && (chn == 0 || chn == 7)) {
+	//if (GEOaddress == 12 && chn<32) {
 	    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	    if (TDC.Nhits >=MaxCaenHits){
 	      continue;
@@ -492,7 +509,16 @@ void ReadPhysicsBuffer(){
 	}// end of if(geo)	
       }//end of for(chanCount)
       
-    
+      unsigned short EOB_l = *(gpoint++);
+      unsigned short EOB_h = *(gpoint++);
+      unsigned short EOB_bit;
+      
+      unsigned short geo = (EOB_h&0xf800)>>11;
+      EOB_bit = (EOB_h&0x0400)>>10;
+      
+      if (geo == GEOaddress && EOB_bit) {
+	EOB_NEvents = EOB_l+(EOB_h&0x00ff)*65536+1;
+      } 
 
       while ((gpoint < epoint + words )&&(*gpoint==0xffff)){
 	gpoint ++;
