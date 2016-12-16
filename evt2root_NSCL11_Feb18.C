@@ -72,7 +72,6 @@ TH1I* hCaenADC[5][32];
 TH1I* hCaenTDC[5][32];
 TH1I* HitPattern_MB1;
 TH1I* HitPattern_MB2;
-
 TH2I* ChanEn_MB1;
 TH2I* ChanEn_MB2;
 TH2I* ChanT_MB1;
@@ -106,7 +105,7 @@ int evt2root_NSCL11_Feb18(){
   cout << "evt2root: Takes .evt files from a list and converts the data into ROOT format." <<endl;
   cout << "==============================================================================" <<endl;
 
-  int unsigned buflen = 26656;
+  const int unsigned buflen = 26656;
   char buffer[buflen]; 
 
   int unsigned type;
@@ -134,9 +133,8 @@ int evt2root_NSCL11_Feb18(){
   // ROOT output file
   ROOTFile = new char [OutputROOTFile.size()+1];
   strcpy (ROOTFile, OutputROOTFile.c_str());
+  fileR = new TFile(ROOTFile,"RECREATE");
 
-//  fileR = new TFile(ROOTFile,"RECREATE");  
-  fileR = new TFile(ROOTFile,"RECREATE");  
   // Data Tree
   DataTree = new TTree("DataTree","DataTree");
   //DataTree->SetMaxTreeSize(1900000000LL);
@@ -204,7 +202,7 @@ int evt2root_NSCL11_Feb18(){
   ListEVT >> run_number;
 
   //Loop over files in the data file list.
-  while(!ListEVT.eof()){
+  while(!ListEVT.eof()) {
 
     if (evtfile.is_open()) cout << "  * Problem previous file not closed!" << endl;
 
@@ -273,18 +271,15 @@ int evt2root_NSCL11_Feb18(){
       case 1:
 	BufferPhysics++;
 	ReadPhysicsBuffer();	
-	break; //end of physics buffer	
-	
-      }//end switch(type)      
-
+	break; //end of physics buffer		
+      }//end switch(type)  
     } //end for(;;) over evtfile
     ////---------------------------------------------------------------------------------
     
     evtfile.close();
     evtfile.clear(); // clear event status in case we had a bad file
 
-    ListEVT >> run_number;
-      
+    ListEVT >> run_number;      
   }
 
   cout << setprecision(3);
@@ -293,10 +288,7 @@ int evt2root_NSCL11_Feb18(){
   cout << "Number of events based on buffer headers: " << TotEvents << endl; 
   cout << "Number of events based on event counter: " <<  EventCounter << endl;
     
-  //fileR = new TFile(ROOTFile,"RECREATE");  
-  // DataTree->Write();
   RootObjects->Write();
-  // fileR->Write();
   fileR->Close();	
   
   return 1;
@@ -313,18 +305,13 @@ void ReadPhysicsBuffer(){
   TotEvents += Nevents;
 
   for (unsigned int ievent=0;ievent<Nevents;ievent++) {
-
     Si.ResetASICHit();
     ADC.ResetCAENHit();
     TDC.ResetCAENHit();
 
     //create pointer inside of each  event
     unsigned short * fpoint = epoint;
-		    
     words = *fpoint++;
-
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
     int XLMdata1 = *fpoint++;
   
     if (XLMdata1==0xaaaa) {
@@ -337,7 +324,7 @@ void ReadPhysicsBuffer(){
 
       fpoint+=5;
 
-      for (int istrip=0; istrip<Nstrips; istrip++) {
+      for (int istrip=0;istrip<Nstrips;istrip++) {
 	//cout << "istrip=" << istrip << endl;
 	unsigned short *gpoint = fpoint;
 	unsigned short id = *gpoint;
@@ -360,9 +347,9 @@ void ReadPhysicsBuffer(){
 	  if (chipNum == 9 || chipNum == 10 ) energy =16384-energy;
 	  if (chipNum == 11 || chipNum == 12 ) energy =16384-energy;
 	  if (chipNum == 13 || chipNum == 14 ) energy =16384-energy;
-	  //============================================================================
+	  //============================================================================   
 
-	  //	  HitPattern_MB1->Fill(chipNum*16-16+chanNum);
+	  //HitPattern_MB1->Fill(chipNum*16-16+chanNum);
 	  //ChanEn_MB1->Fill(chipNum*16-16+chanNum,energy);
 	  //ChanT_MB1->Fill(chipNum*16-16+chanNum,time);
            
@@ -376,9 +363,7 @@ void ReadPhysicsBuffer(){
 	  {
 	    
 	  } 
-
 	fpoint +=3;
-		
       }// end for(isrtip)
     }//end if(XLMdata1)	
   
@@ -401,7 +386,7 @@ void ReadPhysicsBuffer(){
       unsigned short Nstrips = *fpoint;	      
       fpoint+=5;
 	      
-      for (int istrip=0;istrip<Nstrips;istrip++){
+      for (int istrip=0;istrip<Nstrips;istrip++) {
 	unsigned short *gpoint = fpoint;
 	unsigned short id = *gpoint;
 	unsigned short chipNum = (id&0x1FE0)>>5;
@@ -450,8 +435,7 @@ void ReadPhysicsBuffer(){
 
       if(fpoint>epoint+words) break;
     }
-   
-    	
+       	
     if (CAEN==0xcccc) CAENCounter++;
     	    
     while (fpoint < epoint + words){
@@ -492,7 +476,7 @@ void ReadPhysicsBuffer(){
 	    //000000000000000000000000000000000000000000000000000000000000000
 	    //// when you run without CAEN data i.e. Si-Alpha cal in vacuum
 	    //// turn this part off
-	    if (ADC.Nhits >= MaxCaenHits){
+	    if (ADC.Nhits >= MaxCaenHits) {
 	      continue;
 	    }
 	    if (ov) {
@@ -501,18 +485,11 @@ void ReadPhysicsBuffer(){
 	      ADC.Data[ADC.Nhits++] = -1000;
 	    } else {
 	      ADC.Data[ADC.Nhits++] = dat;
-	    }
-	    
-	    //if ( !(ov || un) ){
-	    //ADC.Data[ADC.Nhits++] = dat;
-	    //}
-	    //0000000000000000000000000000000000000000000000000000000000000000
-
+	    }	  
 	  }
 
 	  ///////////////////////////////////////////
-	  //for RF-time & MCPs
-	  
+	  //for RF-time & MCPs	  
 
 	  if (GEOaddress == 12 && chn<32) {
 	    if (TDC.Nhits >= MaxCaenHits){
@@ -523,12 +500,10 @@ void ReadPhysicsBuffer(){
             TDC.Data[TDC.Nhits++] = dat;
 	  }	
 
-	  if (chn<32) data[chn] = dat; 
+	  if (chn<32) data[chn] = dat;   
 	  
-	  
-	}// end of if (geo == GEOaddress) {	
-      }//end of for(i=0;i<chanCount;i++)
-      
+	}// end of if(geo)	
+      }//end of for(chanCount)
       
       unsigned short EOB_l = *(gpoint++);
       unsigned short EOB_h = *(gpoint++);
@@ -540,7 +515,7 @@ void ReadPhysicsBuffer(){
       if (geo == GEOaddress && EOB_bit) {
 	EOB_NEvents = EOB_l+(EOB_h&0x00ff)*65536+1;
       } 
-      
+
       while ((gpoint < epoint + words )&&(*gpoint==0xffff)){
 	gpoint ++;
       }
@@ -560,7 +535,5 @@ void ReadPhysicsBuffer(){
     DataTree->Fill();
 
   }//end for over events
-
 }//end of void ReadPhysicsBuffer()
-
-/////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
