@@ -4,7 +4,8 @@
  *
  * Description: Runs evt2root on the files listed in runs.lst. User has option of deleting the 
  * .evt files after conversion. The commands run for each conversion are listed in rootinput.txt.
- * The location of the data files (input) and ROOT files (output) are specified in the code.
+ * The location of the data files (input) and ROOT files (output) are specified in the code. The
+ * use of this code will generate a seperate ROOT file for each run.
  *
  * Requires:
  *        runs.lst
