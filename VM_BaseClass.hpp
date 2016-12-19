@@ -29,6 +29,8 @@ Author: Nabin Rijal, 2015
 class VM_BaseClass:public TNamed{
 protected:
 public:
+  using TObject::Execute;
+  using TNamed::Print;
   VM_BaseClass(){}
   VM_BaseClass(const TString&name, const TString&title="",const unsigned int& id=0);
   virtual void Bind(){};
@@ -43,7 +45,7 @@ class VM_BaseClass_Stack:public VM_BaseClass{
 protected:
   TList *fVMStack;//!  
 public: 
- 
+  using TNamed::Print;
   VM_BaseClass_Stack(const TString& name="");
   ~VM_BaseClass_Stack(){
     if(fVMStack){
@@ -55,19 +57,15 @@ public:
   virtual void Init();
   virtual UInt_t GetSize()const{return fVMStack ? fVMStack->GetSize() : 0;}
   virtual UInt_t GetNum() const{return GetSize();}
-  virtual UInt_t AddBranches(TTree* _tree){return 0;}//
-  virtual UInt_t SetBranches(TTree* _tree){return 0;}//
+  //virtual UInt_t AddBranches(TTree* _tree){return 0;}//
+  //virtual UInt_t SetBranches(TTree* _tree){return 0;}//
   virtual UInt_t Add(VM_BaseClass * base);
   virtual void ClearStack(){if(fVMStack)fVMStack->Clear();} 
   virtual void Print();
   virtual void Reset();
   
-
   ClassDef(VM_BaseClass_Stack,1);
 };
-
-
-
 
 #endif
 ///////////////////////////////////////////////////////////////////////////////////
