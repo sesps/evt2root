@@ -210,7 +210,7 @@ public:
     return flag;
   }
 
-  virtual UInt_t chipTime(UInt_t time,int chip,TString modName){
+  virtual UInt_t chipTime(UInt_t time,int chip,TString modName){//unused parameters?
     time = 16384 - time; 
     return time; 
   }
