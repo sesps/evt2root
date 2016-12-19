@@ -62,21 +62,12 @@ TObjArray* RootObjects;
 float CalParamF[128][3];
 float CalParamB[128][3];
 
-TH1I* hE1[9][32];
-TH1I* hT1[9][32];
-TH1I* hE2[9][32];
-TH1I* hT2[9][32];
-TH1I* hCaenADC[5][32];
-TH1I* hCaenTDC[5][32];
 TH1I* HitPattern_MB1;
 TH1I* HitPattern_MB2;
 TH2I* ChanEn_MB1;
 TH2I* ChanEn_MB2;
 TH2I* ChanT_MB1;
 TH2I* ChanT_MB2;
-
-TH1I* CMonTot;
-TH1I* CMonLive;
 
 int unsigned Nevents;
 int unsigned TotEvents=0;
@@ -159,10 +150,6 @@ int evt2root_NSCL11(){
   ChanT_MB1 = new TH2I("TiVsCh_MB1","",xbins,0,xbins,ybins,0,4*ybins);
   ChanT_MB2 = new TH2I("TiVsCh_MB2","",xbins,0,xbins,ybins,0,4*ybins);
   
-  xbins=300;
-  CMonTot  = new TH1I("MonTot","",xbins,0,xbins);
-  CMonLive = new TH1I("MonLive","",xbins,0,xbins);
-
   //List of root objects.
   RootObjects = new TObjArray();
   RootObjects->Add(DataTree);
@@ -172,9 +159,7 @@ int evt2root_NSCL11(){
   RootObjects->Add(ChanEn_MB2);
   RootObjects->Add(ChanT_MB1);
   RootObjects->Add(ChanT_MB2);
-  RootObjects->Add(CMonTot);
-  RootObjects->Add(CMonLive);
-
+  
   string data_dir = "";
 
   //Check if this file exists.
@@ -285,7 +270,6 @@ int evt2root_NSCL11(){
     
     evtfile.close();
     evtfile.clear(); // clear event status in case we had a bad file
-    
     }//end of segment loop
     if(nseg>1)
       printf("   %d segments found\n",nseg);
@@ -363,9 +347,7 @@ void ReadPhysicsBuffer(){
 	  HitPattern_MB1->Fill(chipNum*16-16+chanNum);
 	  ChanEn_MB1->Fill(chipNum*16-16+chanNum,energy);
 	  ChanT_MB1->Fill(chipNum*16-16+chanNum,time);
-	  if (Si.Nhits >= MaxCaenHits){
-	    continue;
-	  }
+        
           Si.MBID[Si.Nhits]=1;
           Si.CBID[Si.Nhits]=chipNum;
           Si.ChNum[Si.Nhits]=chanNum;
@@ -374,10 +356,10 @@ void ReadPhysicsBuffer(){
 	}
 	else
 	  {
-	    
+	    //No problem
 	  } 
 	fpoint +=3;
-      }// end for(isrtip)
+      }// end for(istrip)
     }//end if(XLMdata1)	
   
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++	    	     	
@@ -422,9 +404,7 @@ void ReadPhysicsBuffer(){
 	  HitPattern_MB2->Fill(chipNum*16-16+chanNum);
 	  ChanEn_MB2->Fill(chipNum*16-16+chanNum,energy);
 	  ChanT_MB2->Fill(chipNum*16-16+chanNum,time);
-	  if (Si.Nhits >= MaxCaenHits){
-	    continue;
-	  }    
+	 
           Si.MBID[Si.Nhits]=2;
           Si.CBID[Si.Nhits]=chipNum;
           Si.ChNum[Si.Nhits]=chanNum;
@@ -538,20 +518,13 @@ void ReadPhysicsBuffer(){
 
       // go to next CAEN data
       fpoint = gpoint;		      
-    }
-		    
-    epoint += words+1; // This skips the rest of the event	    
- 
+    }    
+
+    epoint += words+1; // This skips the rest of the event
+     
     EventCounter++;
-    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    if ( (ADC.Nhits >= MaxCaenHits) || (TDC.Nhits >= MaxCaenHits) || (Si.Nhits >= MaxHits) ){
-      TDC.ResetCAENHit();
-      ADC.ResetCAENHit();
-      Si.ResetASICHit();
-    }
-    if (Si.Nhits>0){
-      DataTree->Fill();
-    }
+    
+    DataTree->Fill();   
 
   }//end for over events
 }//end of void ReadPhysicsBuffer()
