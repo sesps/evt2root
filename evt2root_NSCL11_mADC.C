@@ -15,7 +15,7 @@
 // .L SimpleInPipe.cpp++
 // .x evt2root_NSCL11.C++
 //
-// make sure your .evt files are included in the data_files.list
+// make sure your .evt files are included in the evt_files.list
 // 
 // Nabin, ddc, DSG, KTM et.al. // December 2015.
 //
@@ -23,7 +23,6 @@
 // Adapted for MesyTech ADC Unpacking
 //
 // Inputs & Comments are Welcome!           --Nabin
-//
 /////////////////////////////////////////////////////////////////////////////////////
 //C and C++ libraries
 #include <iostream>
@@ -43,7 +42,6 @@
 #include <TCanvas.h>
 #include <TRint.h>
 #include <TObjArray.h>
-
 #include <TH1.h>
 #include <TCutG.h>
 #include <TDirectory.h>
@@ -55,9 +53,9 @@
 #include <unistd.h>
 #include <TGlobal.h> 
 
+//Detectors' libraries
 #include "2015_detclass.h"
 #include "configfile.h"
-
 #include "SimpleInPipe.h"
 #include "VM_Module.hpp"
 #include "VM_BaseClass.hpp"
@@ -68,8 +66,8 @@ void ReadPhysicsBuffer();
 
 const int BufferWords = 13328;
 const int BufferBytes = BufferWords*2;
-int unsigned buflen = 26656;
-char buffer[26656];
+const int unsigned buflen = 26656;
+char buffer[buflen];
 
 const string files_list = "evt_files.list";
 
@@ -128,8 +126,9 @@ TH2I* TDC_vs_Chan;
 //- Detectors' classes --------------------------------------------------------  
 ASICHit Si;
 CAENHit ADC;
+CAENHit TDC;
 MesyHit mADC;
-CAENHit TDC; 
+
 /***************************************************************
  * a little construct to have an array initialized with zeroes *
  ***************************************************************/
@@ -205,6 +204,8 @@ int evt2root_NSCL11_mADC(){
   ROOTFile = new char [OutputROOTFile.size()+1];
   strcpy (ROOTFile, OutputROOTFile.c_str());
   fileR = new TFile(ROOTFile,"RECREATE");  
+
+  // Data Tree
   DataTree = new TTree("DataTree","DataTree");
 
   DataTree->Branch("Si.Nhits",&Si.Nhits,"SiNhits/I");
@@ -294,7 +295,7 @@ int evt2root_NSCL11_mADC(){
   ListEVT >> run_number;
 
   //Loop over files in the data file list.
-  while(!ListEVT.eof()){
+  while(!ListEVT.eof()) {
 
     if (evtfile.is_open()) cout << "  * Problem previous file not closed!" << endl;
 
@@ -322,9 +323,7 @@ int evt2root_NSCL11_mADC(){
     ////-----------------------------------------------------------------------------
     for (;;) {     
       evtfile.read(buffer,8);
-
       evtfile.read(buffer+8,*(unsigned int*)buffer-8);
-
 
 	//--ddc daq11, the data starts right after the body subheader, which should be zero.
 	if( *(unsigned int*)(buffer+8) > 0 ){
@@ -407,14 +406,14 @@ void ReadPhysicsBuffer(){
   for (unsigned int ievent=0;ievent<Nevents;ievent++) {
     Si.ResetASICHit();
     ADC.ResetCAENHit();
-    mADC.ResetMesyHit();
     TDC.ResetCAENHit();
+    mADC.ResetMesyHit();
 
     //create pointer inside of each  event
     unsigned short * fpoint = epoint;		    
     words = *fpoint++;  
     marka->Unpack(fpoint);
-    int XLMdata1 = marka->fChValue[0];
+    int XLMdata1 = (int) marka->fChValue[0];
     chinp1->Reset();
 
     if (XLMdata1==0xaaaa) {
@@ -422,37 +421,37 @@ void ReadPhysicsBuffer(){
     
       unsigned short Nstrips = chinp1->hits.size();    
 
-      for (int istrip=0;istrip<Nstrips;istrip++)
-	{
-	  unsigned short id = chinp1->hits[istrip];
-	  unsigned short chipNum = (id/2)/16 + 1;
-	  unsigned short chanNum = (id/2)%16;
-	  unsigned short energy = chinp1->fChValue[id];
-	  unsigned short time = chinp1->fChValue[id+1];
-
-	  //time = time;
-	  if(chanNum<16){ 	   
-	    HitPattern_MB1->Fill(chipNum*16-16+chanNum);
-	    ChanEn_MB1->Fill(chipNum*16-16+chanNum,energy);
-	    ChanT_MB1->Fill(chipNum*16-16+chanNum,time);
-
-	    Si.MBID[Si.Nhits]=1;
-	    Si.CBID[Si.Nhits]=chipNum;
-	    Si.ChNum[Si.Nhits]=chanNum;
-	    Si.Energy[Si.Nhits]=energy;
-	    Si.Time[Si.Nhits++]=time;	    
+      for (int istrip=0;istrip<Nstrips;istrip++) {
+	unsigned short id = chinp1->hits[istrip];
+	unsigned short chipNum = (id/2)/16 + 1;
+	unsigned short chanNum = (id/2)%16;
+	unsigned short energy = (int) chinp1->fChValue[id];
+	unsigned short time = (int) chinp1->fChValue[id+1];
+	
+	//time = time;
+	if(chanNum<16){ 	   
+	  HitPattern_MB1->Fill(chipNum*16-16+chanNum);
+	  ChanEn_MB1->Fill(chipNum*16-16+chanNum,energy);
+	  ChanT_MB1->Fill(chipNum*16-16+chanNum,time);
+        
+          Si.MBID[Si.Nhits]=1;
+          Si.CBID[Si.Nhits]=chipNum;
+          Si.ChNum[Si.Nhits]=chanNum;
+          Si.Energy[Si.Nhits]=energy;
+          Si.Time[Si.Nhits++]=time;	    
+	}
+	else
+	  {
+	    //No problem
 	  }
-	  else
-	    {
-	      //No problem
-	    }
-	}//end ogf for (int istrip=0;istrip<Nstrips;istrip++)
-    }//end of if (XLMdata1==0xaaaa) 
+      }//end of for (istrip)
+    }//end of if (XLMdata1) 
+
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++	    	     	
     
     // Second XLM readout if present   
     markb->Unpack(fpoint);
-    int XLMdata2 = markb->fChValue[0];
+    int XLMdata2 = (int) markb->fChValue[0];
 
     //Not clear that this is (still?) required...//ddc
     //Prevents from breaking at the bad event buffers....like (wordCount >4095) ??//NR
@@ -472,13 +471,11 @@ void ReadPhysicsBuffer(){
 	  unsigned short id = chinp2->hits[istrip];
 	  unsigned short chipNum = (id/2)/16 + 1;
 	  unsigned short chanNum = (id/2)%16;
-	  unsigned short energy = chinp2->fChValue[id];
-	  unsigned short time = chinp2->fChValue[id+1];
+	  unsigned short energy = (int) chinp2->fChValue[id];
+	  unsigned short time = (int) chinp2->fChValue[id+1];
 
 	  //time = time;
-	  //energy=energy;
-
-	  if(chanNum<16){ 	    
+	  if(chanNum<16) { 	    
 	    HitPattern_MB2->Fill(chipNum*16-16+chanNum);
 	    ChanEn_MB2->Fill(chipNum*16-16+chanNum,energy);
 	    ChanT_MB2->Fill(chipNum*16-16+chanNum,time);
@@ -489,14 +486,15 @@ void ReadPhysicsBuffer(){
 	    Si.Energy[Si.Nhits]=energy;
 	    Si.Time[Si.Nhits++]=time;
 	  }	
-	}
-    }
+      }// end second for(istrip)
+    }//end if(XMLdata2)
+	    
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //--- CAEN readout section -------------------------------------------
     //cout << "CAEN" << endl;
  
     markc->Unpack(fpoint);
-    int CAEN = markc->fChValue[0];
+    int CAEN = (int) markc->fChValue[0];
 		
     while (CAEN != 0xcccc) {
       CAEN = *fpoint++;
@@ -523,7 +521,7 @@ void ReadPhysicsBuffer(){
     for(int i=0;i<32;i++){
       ADC.ID[ADC.Nhits] = 2;
       ADC.ChNum[ADC.Nhits] =i;
-      ADC.Data[ADC.Nhits++] = caen_adc1->fChValue[i];
+      ADC.Data[ADC.Nhits++] = (Int_t) caen_adc1->fChValue[i];
       //hCaenADC[0][i]->Fill(caen_adc1->fChValue[i]);
       PC_vs_Chan1->Fill(i,caen_adc1->fChValue[i]);
     }    
@@ -531,7 +529,7 @@ void ReadPhysicsBuffer(){
     for(int i=0;i<16;i++){//
       ADC.ID[ADC.Nhits] = 3;
       ADC.ChNum[ADC.Nhits] =i;
-      ADC.Data[ADC.Nhits++] = caen_adc2->fChValue[i];   
+      ADC.Data[ADC.Nhits++] = (Int_t) caen_adc2->fChValue[i];   
       //hCaenADC[1][i]->Fill(caen_adc2->fChValue[i]);  
       PC_vs_Chan2->Fill(i,caen_adc2->fChValue[i]);
     }
@@ -539,7 +537,7 @@ void ReadPhysicsBuffer(){
     for(int i=0;i<32;i++){  
       mADC.ID[mADC.Nhits] = 1;
       mADC.ChNum[mADC.Nhits] =i;
-      mADC.Data[mADC.Nhits++] = mesy_adc1->fChValue[i];
+      mADC.Data[mADC.Nhits++] = (Int_t) mesy_adc1->fChValue[i];
       //hMADC[0][i]->Fill(mesy_adc1->fChValue[i]);
       CsI_vs_Chan_MESY1->Fill(i,mesy_adc1->fChValue[i]);     
     }  
@@ -547,7 +545,7 @@ void ReadPhysicsBuffer(){
     for(int i=0;i<32;i++){
       mADC.ID[mADC.Nhits] = 2;
       mADC.ChNum[mADC.Nhits] =i;
-      mADC.Data[mADC.Nhits++] = caen_adc3->fChValue[i];  
+      mADC.Data[mADC.Nhits++] = (Int_t) caen_adc3->fChValue[i];  
       //hCaenADC[2][i]->Fill(caen_adc3->fChValue[i]);
       CsI_vs_Chan_CAEN->Fill(i,caen_adc3->fChValue[i]);
     }   
@@ -556,7 +554,7 @@ void ReadPhysicsBuffer(){
       if( i==0 || i ==7){
 	TDC.ID[TDC.Nhits] = 12;
 	TDC.ChNum[TDC.Nhits] =i;
-	TDC.Data[TDC.Nhits++] = caen_tdc1->fChValue[i];   
+	TDC.Data[TDC.Nhits++] = (Int_t) caen_tdc1->fChValue[i];   
 	//hCaenTDC[0][i]->Fill(caen_tdc1->fChValue[i]);
 	TDC_vs_Chan->Fill(i,caen_tdc1->fChValue[i]);
       }	
