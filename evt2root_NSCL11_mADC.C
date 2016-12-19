@@ -156,9 +156,6 @@ int evt2root_NSCL11_mADC(){
   cout << "evt2root: Takes .evt files from a list and converts the data into ROOT format." <<endl;
   cout << "==============================================================================" <<endl;
 
-  int unsigned buflen = 26656;
-  char buffer[buflen]; 
-
   int unsigned type;
   UInt_t BufferType = 0;
   int unsigned Nbuffers=0;
@@ -203,7 +200,7 @@ int evt2root_NSCL11_mADC(){
   // ROOT output file
   ROOTFile = new char [OutputROOTFile.size()+1];
   strcpy (ROOTFile, OutputROOTFile.c_str());
-  fileR = new TFile(ROOTFile,"RECREATE");  
+  fileR = new TFile(ROOTFile,"RECREATE");
 
   // Data Tree
   DataTree = new TTree("DataTree","DataTree");
@@ -229,26 +226,29 @@ int evt2root_NSCL11_mADC(){
   DataTree->Branch("TDC.ID",TDC.ID,"ID[TDCNhits]/I");
   DataTree->Branch("TDC.ChNum",TDC.ChNum,"ChNum[TDCNhits]/I");
   DataTree->Branch("TDC.Data",TDC.Data,"Data[TDCNhits]/I");
-
+  
   // Histograms
-  HitPattern_MB1 = new TH1I("HitPattern_MB1","",289,0,288);
-  HitPattern_MB2 = new TH1I("HitPattern_MB2","",289,0,288);
-  ChanEn_MB1 = new TH2I("EnVsCh_MB1","",289,0,288,4096,0,16384);
-  ChanEn_MB2 = new TH2I("EnVsCh_MB2","",289,0,288,4096,0,16384);
-  ChanT_MB1 = new TH2I("TiVsCh_MB1","",289,0,288,4096,0,16384);
-  ChanT_MB2 = new TH2I("TiVsCh_MB2","",289,0,288,4096,0,16384);
+  Int_t xbins=288;
+  Int_t ybins=4096;
+  HitPattern_MB1 = new TH1I("HitPattern_MB1","",xbins,0,xbins);
+  HitPattern_MB2 = new TH1I("HitPattern_MB2","",xbins,0,xbins);
+  ChanEn_MB1 = new TH2I("EnVsCh_MB1","",xbins,0,xbins,ybins,0,4*ybins);
+  ChanEn_MB2 = new TH2I("EnVsCh_MB2","",xbins,0,xbins,ybins,0,4*ybins);
+  ChanT_MB1 = new TH2I("TiVsCh_MB1","",xbins,0,xbins,ybins,0,4*ybins);
+  ChanT_MB2 = new TH2I("TiVsCh_MB2","",xbins,0,xbins,ybins,0,4*ybins);
 
-  CsI_vs_Chan_CAEN = new TH2I("CsI_vs_Chan_CAEN","",34,0,33,1024,0,4095);
-  CsI_vs_Chan_MESY1 = new TH2I("CsI_vs_Chan_MESY1","",34,0,33,1024,0,4095);
-  CsI_vs_Chan_MESY2 = new TH2I("CsI_vs_Chan_MESY2","",34,0,33,1024,0,4095);
-  PC_vs_Chan1 = new TH2I("PC_vs_Chan1","",34,0,33,1024,0,4095);
-  PC_vs_Chan2 = new TH2I("PC_vs_Chan2","",34,0,33,1024,0,4095);
-  TDC_vs_Chan = new TH2I("TDC_vs_Chan","",34,0,33,1024,0,4095);
+  xbins=33;
+  ybins=1024;
+  CsI_vs_Chan_CAEN = new TH2I("CsI_vs_Chan_CAEN","",xbins,0,xbins,ybins,0,4*ybins);
+  CsI_vs_Chan_MESY1 = new TH2I("CsI_vs_Chan_MESY1","",xbins,0,xbins,ybins,0,4*ybins);
+  CsI_vs_Chan_MESY2 = new TH2I("CsI_vs_Chan_MESY2","",xbins,0,xbins,ybins,0,4*ybins);
+  PC_vs_Chan1 = new TH2I("PC_vs_Chan1","",xbins,0,xbins,ybins,0,4*ybins);
+  PC_vs_Chan2 = new TH2I("PC_vs_Chan2","",xbins,0,xbins,ybins,0,4*ybins);
+  TDC_vs_Chan = new TH2I("TDC_vs_Chan","",xbins,0,xbins,ybins,0,4*ybins);
 
   //List of root objects.
   RootObjects = new TObjArray();
   RootObjects->Add(DataTree);
- 
   RootObjects->Add(HitPattern_MB1);
   RootObjects->Add(HitPattern_MB2);
   RootObjects->Add(ChanEn_MB1);
@@ -370,7 +370,7 @@ int evt2root_NSCL11_mADC(){
 	BufferPhysics++;
 	ReadPhysicsBuffer();	
 	break; //end of physics buffer		
-      }//end switch(type)      
+      }//end switch(type)  
     } //end for(;;) over evtfile
     ////---------------------------------------------------------------------------------
     
@@ -401,7 +401,7 @@ int evt2root_NSCL11_mADC(){
 void ReadPhysicsBuffer(){
 
   Nevents = 1;
-  TotEvents += Nevents; 
+  TotEvents += Nevents;
 
   for (unsigned int ievent=0;ievent<Nevents;ievent++) {
     Si.ResetASICHit();
