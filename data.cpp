@@ -1,3 +1,20 @@
+/*
+ * Program: data.cpp
+ *        Developed by J. Lighthall Jul-Dec 2016
+ *
+ * Description: Runs evt2root on the files listed in runs.lst. User has option of deleting the 
+ * .evt files after conversion. The commands run for each conversion are listed in rootinput.txt.
+ * The location of the data files (input) and ROOT files (output) are specified in the code.
+ *
+ * Requires:
+ *        runs.lst
+ *        rootinput.txt
+ *
+ * Output:
+ *        evt_files.list
+ */
+
+//C and C++ libraries
 #include <iostream>
 #include <fstream>
 #include <string>
