@@ -167,25 +167,6 @@ int evt2root_NSCL11_mADC(){
   string aux;
   char *ROOTFile; 
 
-  /*
-  for(int j=0;j<3;j++){
-    for(int i=0;i<32;i++){
-      hCaenADC[j][i] = new TH1I(Form("ADC%d_ch%02d",j+1,i),"",1025,-3,4096);     
-    }
-  }
-  for(int j=0;j<2;j++){
-    for(int i=0;i<32;i++){      
-      hCaenTDC[j][i] = new TH1I(Form("TDC%d_ch%02d",j+1,i),"",1025,-3,4096);      
-    }
-  }
-
-  for(int j=0;j<1;j++){
-    for(int i=0;i<32;i++){      
-      hMADC[j][i] = new TH1I(Form("MADC%d_ch%02d",j+1,i),"",1025,-3,4096);
-    }
-  }
-  */
-
   ListEVT.open(files_list.c_str());
   if (!ListEVT.is_open()) {
     cout << "*** Error: could not open " << files_list << endl;
@@ -263,17 +244,6 @@ int evt2root_NSCL11_mADC(){
   RootObjects->Add(PC_vs_Chan2);
   RootObjects->Add(TDC_vs_Chan); 
 
-  /*
-  for(int i=0;i<32;i++){
-    RootObjects->Add(hCaenADC[0][i]);
-    RootObjects->Add(hCaenADC[1][i]);
-    RootObjects->Add(hMADC[0][i]);
-    RootObjects->Add(hMADC[1][i]);    
-    RootObjects->Add(hCaenTDC[0][i]);
-    RootObjects->Add(hCaenADC[2][i]);
-  }
-  */
-
   string data_dir = "";
 
   //Check if this file exists.
@@ -291,7 +261,8 @@ int evt2root_NSCL11_mADC(){
   bool endOfRun = 0;
   cout << "Loop over evt files " <<endl; //debug
  
-  int run_number; 
+  int run_number;
+  int nseg;
   ListEVT >> run_number;
 
   //Loop over files in the data file list.
@@ -300,24 +271,36 @@ int evt2root_NSCL11_mADC(){
     if (evtfile.is_open()) cout << "  * Problem previous file not closed!" << endl;
 
     endOfRun=0;
-    fileProblem = 0;    
-   
-    string name = data_dir + Form("run-%.4d-00.evt", run_number);
-    cout << "  Data file: " << name << endl;
+    fileProblem = 0;   
+    nseg=0;
+    for(int seg_number=0;seg_number<3;seg_number++) {
+      string name = data_dir + Form("run-%.4d-%.2d.evt",run_number,seg_number);
 
     //open evt file
     evtfile.clear();
     evtfile.open(name.c_str(),ios::binary);      
-
-    if (evtfile.bad()) cout << "  ** Bad evt file." << endl;
-    if (evtfile.fail()) cout << "  ** Fail evt file" << endl;
     
-    if (!evtfile) {
-      cout << "  Could not open evt file" << endl;
-      //return 1;
+    if(seg_number==0) {//should be true for all files in list
+      cout << "  Data file: " << name << endl;
+    
+      if (evtfile.bad()) cout << "   ** Bad evt file." << endl;
+      if (evtfile.fail()) cout << "   ** Fail evt file" << endl;
+      
+      if (!evtfile) {
+	cout << "   Could not open evt file" << endl;
+	//return 1;
+      }
+      else {
+      cout << "   Converting data ..." << endl;
+      nseg++;
+      }
     }
-    else {
-      cout << "  Converting data ..." << endl;
+    else {//should only be true for multi-segment files; limit output in case of single-segment
+      if(evtfile.good()) {
+	cout << "  Data file: " << name << endl;
+	cout << "   Converting data ..." << endl;
+	nseg++;
+      }
     }
 
     ////-----------------------------------------------------------------------------
@@ -357,7 +340,7 @@ int evt2root_NSCL11_mADC(){
 
       case 11: 
 	runNum = *(epoint+8);
-	cout << "run number="<< runNum << endl;
+	cout << "   run number="<< runNum << endl;
 	break;
 	
       case 12:
@@ -376,8 +359,10 @@ int evt2root_NSCL11_mADC(){
     
     evtfile.close();
     evtfile.clear(); // clear event status in case we had a bad file
-
-    ListEVT >> run_number;      
+    }//end of segment loop
+    if(nseg>1)
+      printf("   %d segments found\n",nseg);
+    ListEVT >> run_number;
   }
 
   cout << setprecision(3);
@@ -466,8 +451,7 @@ void ReadPhysicsBuffer(){
 
       unsigned short Nstrips = chinp2->hits.size();		 
 
-      for (int istrip=0;istrip<Nstrips;istrip++)
-	{
+      for (int istrip=0;istrip<Nstrips;istrip++) {
 	  unsigned short id = chinp2->hits[istrip];
 	  unsigned short chipNum = (id/2)/16 + 1;
 	  unsigned short chanNum = (id/2)%16;
@@ -486,7 +470,7 @@ void ReadPhysicsBuffer(){
 	    Si.Energy[Si.Nhits]=energy;
 	    Si.Time[Si.Nhits++]=time;
 	  }	
-      }// end second for(istrip)
+	}// end second for(istrip)
     }//end if(XMLdata2)
 	    
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -558,19 +542,10 @@ void ReadPhysicsBuffer(){
 	//hCaenTDC[0][i]->Fill(caen_tdc1->fChValue[i]);
 	TDC_vs_Chan->Fill(i,caen_tdc1->fChValue[i]);
       }	
-    }	
-    //---------------------------------------------------
+    }	    
+ 
     EventCounter++;
-
-    /* //Already Zero Suppressed //that's why Generally not necessary
-
-      if ( (ADC.Nhits >= MaxCaenHits) || (TDC.Nhits >= MaxCaenHits) || (Si.Nhits >= MaxHits) ){
-      TDC.ResetCAENHit();
-      ADC.ResetCAENHit();
-      Si.ResetASICHit();
-      }
-    */
-
+    
     DataTree->Fill();   
 
   }//end for over events
