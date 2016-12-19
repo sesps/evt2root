@@ -20,13 +20,14 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <cstdlib>
 
 using namespace std;
 
 int main()
 {
   int list[99];
-  char* fname="runs.lst"; //name of file with list of run numbers
+  const char* fname="runs.lst"; //name of file with list of run numbers
   
   ifstream infile(fname);
   printf("Reading list file \"%s\"\n",fname);
