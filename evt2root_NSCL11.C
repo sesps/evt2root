@@ -102,9 +102,6 @@ int evt2root_NSCL11(){
   cout << "evt2root: Takes .evt files from a list and converts the data into ROOT format." <<endl;
   cout << "==============================================================================" <<endl;
 
-  //const int unsigned buflen = 26656;
-  //char buffer[buflen]; 
-
   int unsigned type;
   UInt_t BufferType = 0;
   int unsigned Nbuffers=0;
@@ -134,7 +131,6 @@ int evt2root_NSCL11(){
 
   // Data Tree
   DataTree = new TTree("DataTree","DataTree");
-  //DataTree->SetMaxTreeSize(1900000000LL);
 
   DataTree->Branch("Si.Nhits",&Si.Nhits,"SiNhits/I");
   DataTree->Branch("Si.MBID",Si.MBID,"MBID[SiNhits]/I");
@@ -154,15 +150,18 @@ int evt2root_NSCL11(){
   DataTree->Branch("TDC.Data",TDC.Data,"Data[TDCNhits]/I");
   
   // Histograms
-  HitPattern_MB1 = new TH1I("HitPattern_MB1","",288,0,288);
-  HitPattern_MB2 = new TH1I("HitPattern_MB2","",288,0,288);
-  ChanEn_MB1 = new TH2I("EnVsCh_MB1","",288,0,288,4096,0,16384);
-  ChanEn_MB2 = new TH2I("EnVsCh_MB2","",288,0,288,4096,0,16384);
-  ChanT_MB1 = new TH2I("TiVsCh_MB1","",288,0,288,4096,0,16384);
-  ChanT_MB2 = new TH2I("TiVsCh_MB2","",288,0,288,4096,0,16384);
+  Int_t bins=288;
+  Int_t ybins=4096;
+  HitPattern_MB1 = new TH1I("HitPattern_MB1","",bins,0,bins);
+  HitPattern_MB2 = new TH1I("HitPattern_MB2","",bins,0,bins);
+  ChanEn_MB1 = new TH2I("EnVsCh_MB1","",bins,0,bins,ybins,0,4*ybins);
+  ChanEn_MB2 = new TH2I("EnVsCh_MB2","",bins,0,bins,ybins,0,4*ybins);
+  ChanT_MB1 = new TH2I("TiVsCh_MB1","",bins,0,bins,ybins,0,4*ybins);
+  ChanT_MB2 = new TH2I("TiVsCh_MB2","",bins,0,bins,ybins,0,4*ybins);
   
-  CMonTot  = new TH1I("MonTot","",300,0,300);
-  CMonLive = new TH1I("MonLive","",300,0,300);
+  xbins=300;
+  CMonTot  = new TH1I("MonTot","",xbins,0,xbins);
+  CMonLive = new TH1I("MonLive","",xbins,0,xbins);
 
   //List of root objects.
   RootObjects = new TObjArray();
