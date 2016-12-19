@@ -59,7 +59,7 @@ inline std::ostream& operator<<(std::ostream& out, const ValueType& val)
   if(val.size() != 1)
   {
     out << "[" << val.size() << "] = { ";
-    for(int i = 0; i < val.size(); ++i)
+    for(unsigned int i = 0; i < val.size(); ++i)
     {
       out << static_cast<std::string>(val[i]);
       if(i != val.size() - 1)
