@@ -3,14 +3,14 @@
 //
 // Description: Takes .evt files from a list and converts them to ROOT format. 
 // There is only one output file named "output.root". The list of evt files 
-// is "data_files.list" and its first line is the directory where all the data 
+// is "evt_files.list" and its first line is the directory where all the data 
 // files are located. This script also needs a library where the detectors 
 // classes are defined.
 // 
 // Adopted & tested for the NSCLDAQ11 version.
 //
 // to run it: root -l evt2root_NSCL11.C++
-// make sure your .evt files are included in the data_files.list
+// make sure your .evt files are included in the evt_files.list
 // 
 // Nabin, Dev, DSG, KTM et.al. // December 2015.
 //
@@ -40,21 +40,19 @@
 #include <TRint.h>
 #include <TObjArray.h>
 
-using namespace std;
-
 //Detectors' libraries
 #include "2015_detclass.h"
+
+using namespace std;
 //////////////////////////////////////////////////////////////////////////////////////
 void ReadPhysicsBuffer();
 
 const int BufferWords = 13328;
 const int BufferBytes = BufferWords*2;
+const int unsigned buflen = 26656;
+char buffer[buflen];
 
-int unsigned buflen = 26656;
-//char buffer[buflen];
-char buffer[26656];
-
-const string files_list = "data_files.list";
+const string files_list = "evt_files.list";
 
 // Global variables
 TFile* fileR;
@@ -104,8 +102,8 @@ int evt2root_NSCL11(){
   cout << "evt2root: Takes .evt files from a list and converts the data into ROOT format." <<endl;
   cout << "==============================================================================" <<endl;
 
-  const int unsigned buflen = 26656;
-  char buffer[buflen]; 
+  //const int unsigned buflen = 26656;
+  //char buffer[buflen]; 
 
   int unsigned type;
   UInt_t BufferType = 0;
@@ -372,7 +370,6 @@ void ReadPhysicsBuffer(){
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++	    	     	
     int XLMdata2 = *fpoint++;
     int counter;
-
     counter = 0;
     while (XLMdata2 != 0xbbbb) {
       XLMdata2 = *fpoint++;
@@ -381,7 +378,6 @@ void ReadPhysicsBuffer(){
     }
 
     if (XLMdata2==0xbbbb) {              
-  
       ASICsCounter++;
       fpoint += 3;
 
@@ -433,20 +429,15 @@ void ReadPhysicsBuffer(){
 
     int CAEN = *fpoint++;
 	
-    counter = 0;
     while (CAEN != 0xcccc) {
       CAEN = *fpoint++;
-      counter++;    
-
       if(fpoint>epoint+words) break;
     }
        	
     if (CAEN==0xcccc) CAENCounter++;
     	    
     while (fpoint < epoint + words){
-
       if(*fpoint == 0xffff ){
-
 	fpoint++;
 	continue;
       }
@@ -460,7 +451,6 @@ void ReadPhysicsBuffer(){
       int i;
 		      
       for (i=0;i<chanCount;i++){
-
 	if(i>31) continue;
 
 	unsigned short ov  = (*gpoint&0x1000)>>12;
@@ -470,7 +460,6 @@ void ReadPhysicsBuffer(){
 	unsigned short chn = (*(gpoint++)&0x1f);
 	
 	if (geo == GEOaddress) {
-
 	  ///////////////////////////////////////////	
 	  ////for CsI 17 && mADC 9 && 10;
 	  //if((GEOaddress == 2 && chn<32) || (GEOaddress == 3 && chn<32) || (GEOaddress == 17 && chn<32)){
