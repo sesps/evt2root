@@ -72,6 +72,7 @@ protected:
   UInt_t fCounter;//!
 
 public:
+  using TNamed::Print;
   TBranch * b_module;
   //--ddc nov15 needs to vary with moduletype!  Float_t fChValue[MODULE_MAX_CHANNELS];
   Float_t* fChValue;
@@ -108,11 +109,10 @@ class VM_Module_Stack:public VM_BaseClass_Stack{
 protected:
 
 public: 
- 
+  using VM_BaseClass_Stack::GetNum;
   VM_Module_Stack(const TString& name="");
   ~VM_Module_Stack(){};
-  
-  
+    
   UInt_t GetNum(UInt_t modtype = 0);
   virtual UInt_t AddBranches(TTree* _tree);
   virtual UInt_t SetBranches(TTree* _tree); 
@@ -122,7 +122,6 @@ public:
  
   ClassDef(VM_Module_Stack,1);
 };
-
 
 class CAEN_ADC:public VM_Module{
 private:
@@ -152,7 +151,6 @@ public:
   MESY_QDC(const TString& name,const UInt_t& geoaddress);
   virtual Bool_t Unpack(unsigned short*& gpointer);
 
-
   ClassDef(MESY_QDC,1);
 };
 
@@ -164,7 +162,6 @@ public:
 
   ClassDef(MESY_ADC,1);
 };
-
 
 class CHINP:public VM_Module{
 private:
@@ -178,7 +175,6 @@ public:
   //--ddc dec15 AND I will override the addbranch and setbranch methods
   UInt_t AddBranch(TTree* _tree);
   UInt_t SetBranch(TTree* _tree);
-
 
   CHINP(){};
   CHINP(const UShort_t& modsize,const TString& name,const UInt_t& geoaddress);
@@ -210,11 +206,11 @@ public:
     return flag;
   }
 
-  virtual UInt_t chipTime(UInt_t time,int chip,TString modName){//unused parameters?
+//virtual UInt_t chipTime(UInt_t time,int chip,TString modName){//unused parameters?
+  virtual UInt_t chipTime(UInt_t time) {
     time = 16384 - time; 
     return time; 
   }
-
 
   virtual UInt_t chipEnergy(UInt_t energy,int chip,TString modName){
 
@@ -261,14 +257,9 @@ public:
 
     return energy;
   }
-  
-
-
 
   ClassDef(CHINP,1);
 };
-
-
 
 class VMUSBMARK:public VM_Module{
 private:
