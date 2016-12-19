@@ -150,14 +150,14 @@ int evt2root_NSCL11(){
   DataTree->Branch("TDC.Data",TDC.Data,"Data[TDCNhits]/I");
   
   // Histograms
-  Int_t bins=288;
+  Int_t xbins=288;
   Int_t ybins=4096;
-  HitPattern_MB1 = new TH1I("HitPattern_MB1","",bins,0,bins);
-  HitPattern_MB2 = new TH1I("HitPattern_MB2","",bins,0,bins);
-  ChanEn_MB1 = new TH2I("EnVsCh_MB1","",bins,0,bins,ybins,0,4*ybins);
-  ChanEn_MB2 = new TH2I("EnVsCh_MB2","",bins,0,bins,ybins,0,4*ybins);
-  ChanT_MB1 = new TH2I("TiVsCh_MB1","",bins,0,bins,ybins,0,4*ybins);
-  ChanT_MB2 = new TH2I("TiVsCh_MB2","",bins,0,bins,ybins,0,4*ybins);
+  HitPattern_MB1 = new TH1I("HitPattern_MB1","",xbins,0,xbins);
+  HitPattern_MB2 = new TH1I("HitPattern_MB2","",xbins,0,xbins);
+  ChanEn_MB1 = new TH2I("EnVsCh_MB1","",xbins,0,xbins,ybins,0,4*ybins);
+  ChanEn_MB2 = new TH2I("EnVsCh_MB2","",xbins,0,xbins,ybins,0,4*ybins);
+  ChanT_MB1 = new TH2I("TiVsCh_MB1","",xbins,0,xbins,ybins,0,4*ybins);
+  ChanT_MB2 = new TH2I("TiVsCh_MB2","",xbins,0,xbins,ybins,0,4*ybins);
   
   xbins=300;
   CMonTot  = new TH1I("MonTot","",xbins,0,xbins);
@@ -192,7 +192,8 @@ int evt2root_NSCL11(){
   bool endOfRun = 0;
   cout << "Loop over evt files " <<endl; //debug
  
-  int run_number; 
+  int run_number;
+  int nseg;
   ListEVT >> run_number;
 
   //Loop over files in the data file list.
@@ -202,24 +203,35 @@ int evt2root_NSCL11(){
 
     endOfRun=0;
     fileProblem = 0;   
-
-    for(int seg_number=0;seg_number<3;seg_number++) { 
+    nseg=0;
+    for(int seg_number=0;seg_number<3;seg_number++) {
       string name = data_dir + Form("run-%.4d-%.2d.evt",run_number,seg_number);
-    cout << "  Data file: " << name << endl;
 
     //open evt file
     evtfile.clear();
     evtfile.open(name.c_str(),ios::binary);      
-
-    if (evtfile.bad()) cout << "  ** Bad evt file." << endl;
-    if (evtfile.fail()) cout << "  ** Fail evt file" << endl;
     
-    if (!evtfile) {
-      cout << "  Could not open evt file" << endl;
-      //return 1;
+    if(seg_number==0) {//should be true for all files in list
+      cout << "  Data file: " << name << endl;
+    
+      if (evtfile.bad()) cout << "   ** Bad evt file." << endl;
+      if (evtfile.fail()) cout << "   ** Fail evt file" << endl;
+      
+      if (!evtfile) {
+	cout << "   Could not open evt file" << endl;
+	//return 1;
+      }
+      else {
+      cout << "   Converting data ..." << endl;
+      nseg++;
+      }
     }
-    else {
-      cout << "  Converting data ..." << endl;
+    else {//should only be true for multi-segment files; limit output in case of single-segment
+      if(evtfile.good()) {
+	cout << "  Data file: " << name << endl;
+	cout << "   Converting data ..." << endl;
+	nseg++;
+      }
     }
 
     ////-----------------------------------------------------------------------------
@@ -254,7 +266,7 @@ int evt2root_NSCL11(){
 
       case 11: 
 	runNum = *(epoint+8);
-	cout << "run number="<< runNum << endl;
+	cout << "   run number="<< runNum << endl;
 	break;
 	
       case 12:
@@ -275,6 +287,8 @@ int evt2root_NSCL11(){
     evtfile.clear(); // clear event status in case we had a bad file
     
     }//end of segment loop
+    if(nseg>1)
+      printf("   %d segments found\n",nseg);
     ListEVT >> run_number;
   }
 
