@@ -252,6 +252,7 @@ Bool_t CHINP::Unpack(unsigned short *& gpointer){
   //--ddc oct15 in daq11(maybe daq10) there is additional module
   //--ddc id word, read out as modid.
   //UInt_t  modid = *(gpointer++);
+  gpointer++;
   //--ddc NOTE: for 'geoaddress'.
   //((modid >> 27) & 0x0f | 0x1ff0))
   UInt_t  wordCount = *((unsigned int*) gpointer);
@@ -346,9 +347,8 @@ Bool_t CHINP::Unpack(unsigned short *& gpointer){
       TString modname = TString(GetName());
 
       e = chipEnergy(e,chip,modname);
-      //time = chipTime(time,chip,modname);//chip and modname not used
+    //time = chipTime(time,chip,modname);//chip and modname not used
       time = chipTime(time);
-
 
     // map 2 chips on same board as one board with 32 channels
       if ((chip & 0x0001) == 0) {
@@ -365,10 +365,9 @@ Bool_t CHINP::Unpack(unsigned short *& gpointer){
 	times.push_back(time);
       }
       PutT(chip,channel,time);
-
     }
   }
-
+  
   //  printf("offset at end = %d\n",offset);
   // figure out how much garbage to gobble from end of event
  
