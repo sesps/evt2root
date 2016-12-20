@@ -10,10 +10,11 @@
 // Adopted & tested for the NSCLDAQ11 version.
 //
 // to run it: 
-// root -l VM_BaseClass.cpp++
-// .L VM_Module.cpp++
-// .L SimpleInPipe.cpp++
-// .x evt2root_NSCL11.C++
+// root -l
+// .x VM_BaseClass.cpp+
+// .L VM_Module.cpp+
+// .L SimpleInPipe.cpp+
+// .x evt2root_NSCL11.C+
 //
 // make sure your .evt files are included in the evt_files.list
 // 
