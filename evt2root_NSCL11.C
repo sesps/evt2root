@@ -2,14 +2,15 @@
 // ROOT script: evt2root_NSCL11.C
 //
 // Description: Takes .evt files from a list and converts them to ROOT format. 
-// There is only one output file named "output.root". The list of evt files 
-// is "evt_files.list" and its first line is the directory where all the data 
-// files are located. This script also needs a library where the detectors 
-// classes are defined.
+// The file "evt_files.list" specifies the location and name of the ouput ROOT
+// file on the first line. Only one ROOT file is generated. The second line is
+// the directory where all the data files are located. The list of run numbers
+// is the remainder of the file. This script also needs a library where the
+// detector classes are defined.
 // 
 // Adopted & tested for the NSCLDAQ11 version.
 //
-// to run it: root -l evt2root_NSCL11.C++
+// to run it: root -l evt2root_NSCL11.C+
 // make sure your .evt files are included in the evt_files.list
 // 
 // Nabin, Dev, DSG, KTM et.al. // December 2015.
