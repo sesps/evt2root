@@ -102,8 +102,6 @@ TH2I* ChanEn_MB2;
 TH2I* ChanT_MB1;
 TH2I* ChanT_MB2;
 
-int counter1=0, counter2=0, counter3=0, counter4=0, counter5=0, counter6=0;
-
 int unsigned Nevents;
 int unsigned TotEvents=0;
 int unsigned words;  
@@ -370,9 +368,8 @@ int evt2root_NSCL11_mADC(){
   cout << setprecision(3);
   cout << "Total buffers = " << Nbuffers << endl;
   cout << "  Physics buffers = " << BufferPhysics  << " (" <<100.0*BufferPhysics/Nbuffers<< "\% of total buffers)"<< endl;  
-  cout << "Number of events based on buffer headers: " << TotEvents << endl; 
-  cout << "Number of events based on event counter: " <<  EventCounter << endl;
-  cout<<"counter1 = "<<counter1<<endl;
+  cout << "  Number of events based on buffer headers: " << TotEvents << endl; 
+  cout << "  Number of events based on event counter:  " <<  EventCounter << endl;
  
   RootObjects->Write();
   fileR->Close();	
