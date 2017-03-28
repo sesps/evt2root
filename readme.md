@@ -17,12 +17,14 @@ Version used by Texas A&M University. Adopted & tested for the NSCLDAQ11 version
 Version used by Florida State University, generalized to include Mesytec modules. 
 
 ## Requirements
-make sure your `.evt` files are included in the `evt_files.list`
-`evt_files.list`
+*VM_BaseClass.cpp
+*VM_Module.cpp
+*SimpleInPipe.cpp
+*evt_files.list
 
 
 ## Execution
-to run it: 
+To run evt2root, the following macros are loaded.
 ```
 root -l
 .x VM_BaseClass.cpp+
@@ -34,14 +36,36 @@ This list of commands is contained within the file `rootinput.txt`.
 ```
 root -l < rootinput.txt
 ```
+### Manual mode
+Concatonate several `.evt` files into one `.root` file. To run, edit the file `evt_files.list` and pass `rootinput.txt` to ROOT. The file `evt_files.list` should be of the form
+```
+Output ROOT file: <output_dir>/filename.root
+Data directory: <input_dir>
+0001
+0002
+0003
+0004
+```
+with the list of `.evt` included. In this example, files 0001--0004 are read in from the input directory and output to filename.root in the output directory. The data from *all four* files will be combined together into a *single* output file.
 
 ### Batch mode
-The file `data.cpp` allows the user to convert a list of files in batch mode.
-Description: Runs evt2root on the files listed in `runs.lst`. User has option of deleting the `.evt` files after conversion. The commands run for each conversion are listed in `rootinput.txt`. The location of the data files (input) and ROOT files (output) are specified in the code. The use of this code will generate a seperate ROOT file for each run.
+Convert several `.evt` files to individulally. The file `data.cpp` allows the user to convert a list of files in batch mode. The use of this code will generate a seperate ROOT file for each run.
+The location of the data files (input) and ROOT files (output) are specified in the code. Any modifications require re-compiling the program with the following command.
+```
+g++ data.cpp -o data.out
+
+```
+
+Once up to date, the file is run with the following  command.
+```
+./data.out
+
+```
+The program runs evt2root individually on the files listed in `runs.lst`. The user has option of deleting the `.evt` files after conversion. The commands run for each conversion are listed in `rootinput.txt`.  
  
 #### Requires:
->`runs.lst`
->`rootinput.txt`
+*`runs.lst`
+*`rootinput.txt`
  
 #### Output:
 >`evt_files.list`
