@@ -40,7 +40,7 @@ int main()
 
   char ans;
   bool del=false;
-  cout << " Do you want to delete the .evt files after conversion?" << endl << "  ";
+  cout << " Do you want to delete the .evt files after conversion? (y/n)" << endl << "  ";
   cin >> ans;
   if (ans=='y')
     del=true;
@@ -48,8 +48,8 @@ int main()
   for(int j=0;j<i;j++)
     {
       std::ofstream outfile("evt_files.list"); //name of file referenced in evt2root_NSCL11.C
-      string str0 = "/data1/lighthall/data/"; //location of .evt files
-      outfile << "Output ROOT file: /data1/lighthall/root/run" << list[j] << ".root" << endl;
+      string str0 = "/data0/lighthall/data/"; //location of .evt files
+      outfile << "Output ROOT file: /data0/lighthall/root/run" << list[j] << ".root" << endl;
       outfile << "Data directory: "<< str0 << endl;
       outfile << list[j] << endl;
       system("root -l < rootinput.txt"); //name of file with ROOT command
