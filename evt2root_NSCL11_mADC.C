@@ -1,23 +1,16 @@
 /////////////////////////////////////////////////////////////////////////////////////
 // ROOT script: evt2root_NSCL11_mADC.C
-//
-// Description: Takes .evt files from a list and converts them to ROOT format. 
-// The file "evt_files.list" specifies the location and name of the ouput ROOT
-// file on the first line. Only one ROOT file is generated. The second line is
-// the directory where all the data files are located. The list of run numbers
-// is the remainder of the file. This script also needs a library where the
-// detectors classes are defined.
-// 
+// See readme.md for general instructions.
 // Adopted & tested for the NSCLDAQ11 version.
 //
 // to run it: 
-// root -l
-// .x VM_BaseClass.cpp+
-// .L VM_Module.cpp+
-// .L SimpleInPipe.cpp+
-// .x evt2root_NSCL11.C+
+//  root -l
+//  .x VM_BaseClass.cpp+
+//  .L VM_Module.cpp+
+//  .L SimpleInPipe.cpp+
+//  .x evt2root_NSCL11.C+
 //
-// make sure your .evt files are included in the evt_files.list
+// make sure your .evt files are included in the evt_files.lst
 // 
 // Nabin, ddc, DSG, KTM et.al. // December 2015.
 //
@@ -71,7 +64,7 @@ const int BufferBytes = BufferWords*2;
 const int unsigned buflen = 26656;
 char buffer[buflen];
 
-const string files_list = "evt_files.list";
+const string files_list = "evt_files.lst";
 
 // Global variables
 TFile* fileR;
