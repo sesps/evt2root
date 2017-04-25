@@ -10,11 +10,9 @@
 // project includes
 #include "SimpleInPipe.h"
 
-// making STD available
 using namespace std;
 
-bool SimpleInPipe::open(char* argv[])
-{
+bool SimpleInPipe::open(char* argv[]) {
   if(isopen)
     ::close(fd);
 
@@ -22,22 +20,19 @@ bool SimpleInPipe::open(char* argv[])
 
   // open the pipe
   int fds[2];
-  if(pipe(fds))
-  {
+  if(pipe(fds)) {
     cerr << "unable to create pipe" << endl;
     return false;
   }
 
   // fork off the subprocess
   pid_t pid = fork();
-  if(pid < 0)
-  {
+  if(pid < 0) {
     cerr << "unable to fork()" << endl;
     return false;
   }
 
-  if(pid == 0)
-  {
+  if(pid == 0) {
     ::close(fds[0]);
     int out(fileno(stdout));
     ::close(out);
@@ -47,8 +42,7 @@ bool SimpleInPipe::open(char* argv[])
     cerr << "failed to execute child process " << argv[0] << endl;
     exit(errno);
   }
-  else
-  {
+  else {
     ::close(fds[1]);
     fd = fds[0];
     isopen = true;
@@ -56,25 +50,20 @@ bool SimpleInPipe::open(char* argv[])
   }
 }
 
-int SimpleInPipe::read(char* buffer, unsigned n)
-{
+int SimpleInPipe::read(char* buffer, unsigned n) {
   if(!isopen) return 0;
 
   unsigned total(0);
-  while(total != n)
-  {
+  while(total != n) {
     unsigned actual(::read(fd, buffer, n - total));
-    if(actual > 0)
-    {
+    if(actual > 0) {
       total += actual;
       buffer += actual;
     }
-    else
-    {
+    else {
       eof_flag = true;
       break;
     }
   }
   return total;
 }
-

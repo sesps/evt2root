@@ -35,35 +35,35 @@ VM_Module::VM_Module(const UShort_t& modsize,const TString& name,const UInt_t& g
   fChValue = new Float_t[fNumOfCh];  
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////
-void VM_Module::Reset(){
+void VM_Module::Reset() {
   //Reset all values stored in module channels
   fValid = 0;
-  for(unsigned int i=0;i<NumOfCh();i++){
+  for(unsigned int i=0;i<NumOfCh();i++) {
     fChValue[i] = 0;
   }  
   return;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////
-UInt_t VM_Module::SortChVal(const UInt_t& ch,const UInt_t & val){
+UInt_t VM_Module::SortChVal(const UInt_t& ch,const UInt_t & val) {
   fChValue[ch]=(Float_t)val+gRandom->Rndm();
   return 1;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////
-void VM_Module::Print(){
+void VM_Module::Print() {
   std::cout<<GetName()<<": "<<"GeoAddress: "<<GeoAddress()<<"\n";
   return ;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////
-UInt_t VM_Module::AddBranch(TTree* _tree){
+UInt_t VM_Module::AddBranch(TTree* _tree) {
   b_module = _tree->Branch(GetName(),fChValue,Form("%s[%d]/F",GetName(),NumOfCh()));
   return 0;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////
-UInt_t VM_Module::SetBranch(TTree* _tree){
-  if(_tree->GetBranch(GetName())){   
+UInt_t VM_Module::SetBranch(TTree* _tree) {
+  if(_tree->GetBranch(GetName())) {   
     _tree->SetBranchAddress(GetName(),&fChValue, &b_module);  
   }
-  else{
+  else {
     std::cout<<"no "<<GetName()<<" present in Tree, Are you sure this rootfile is compatible with this stack?"<<std::endl;
     return 0;
   }
@@ -71,17 +71,15 @@ UInt_t VM_Module::SetBranch(TTree* _tree){
   return 1;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////
-VM_Module_Stack::VM_Module_Stack(const TString& name):VM_BaseClass_Stack(name)					     
-{
-
+VM_Module_Stack::VM_Module_Stack(const TString& name):VM_BaseClass_Stack(name) {
   //VM_Module_Stack(const TString& name="");
-  //~VM_Module_Stack(){};
+  //~VM_Module_Stack() {};
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////
-Bool_t VM_Module_Stack::UnpackModules(unsigned short *& gpointer,int filepos){
+Bool_t VM_Module_Stack::UnpackModules(unsigned short *& gpointer,int filepos) {
   TIter next(fVMStack);
-  while( VM_Module*obj = (VM_Module*)next()){
-    if(!obj->Unpack(gpointer)){
+  while( VM_Module*obj = (VM_Module*)next()) {
+    if(!obj->Unpack(gpointer)) {
       std::cout<<"error at file pos: "<< filepos<<std::endl;
       break; //--ddc 15dec ... No point unpacking rest with a serious error.
     }
@@ -90,7 +88,7 @@ Bool_t VM_Module_Stack::UnpackModules(unsigned short *& gpointer,int filepos){
   return 1;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////
-UInt_t VM_Module_Stack::GetNum(UInt_t modtype){
+UInt_t VM_Module_Stack::GetNum(UInt_t modtype) {
   UInt_t count=0;
   if(!fVMStack)
     return 0;
@@ -99,33 +97,33 @@ UInt_t VM_Module_Stack::GetNum(UInt_t modtype){
   TIter next(fVMStack);
   
   //count how many modules in the stack are equal to a particular type
-  while( VM_Module*obj = (VM_Module*)next()){
+  while( VM_Module*obj = (VM_Module*)next()) {
     if(obj->ModuleType() == modtype)
       count++;
   }
   return count;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////
-UInt_t VM_Module_Stack::AddBranches(TTree *_tree){
+UInt_t VM_Module_Stack::AddBranches(TTree *_tree) {
   TIter next(fVMStack);
-  while( VM_Module*obj = (VM_Module*)next()){
+  while( VM_Module*obj = (VM_Module*)next()) {
     obj->AddBranch(_tree);
   }
   return 1;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////
-UInt_t VM_Module_Stack::SetBranches(TTree *_tree){
+UInt_t VM_Module_Stack::SetBranches(TTree *_tree) {
   TIter next(fVMStack);
-  while( VM_Module*obj = (VM_Module*)next()){
+  while( VM_Module*obj = (VM_Module*)next()) {
     obj->SetBranch(_tree);
   }
   return 1;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////
-UInt_t VM_Module_Stack::SortGeoChVal(const UShort_t& geoaddress,const UInt_t& ch, const UInt_t& val){
+UInt_t VM_Module_Stack::SortGeoChVal(const UShort_t& geoaddress,const UInt_t& ch, const UInt_t& val) {
   TIter next(fVMStack);
-  while( VM_Module*obj = (VM_Module*)next()){
-    if(obj->GeoAddress() == geoaddress){
+  while( VM_Module*obj = (VM_Module*)next()) {
+    if(obj->GeoAddress() == geoaddress) {
       obj->SortChVal(ch,val);
       return 1;
     } 
@@ -133,22 +131,22 @@ UInt_t VM_Module_Stack::SortGeoChVal(const UShort_t& geoaddress,const UInt_t& ch
   return 0;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////
-UInt_t VM_Module_Stack::Add(VM_BaseClass *base){
-  if(!base->InheritsFrom("VM_Module")){
+UInt_t VM_Module_Stack::Add(VM_BaseClass *base) {
+  if(!base->InheritsFrom("VM_Module")) {
     return 0;
   }
-  if(!fVMStack){
+  if(!fVMStack) {
     Init();
   }
   fVMStack->Add(base);
   return 1;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////
-CAEN_ADC::CAEN_ADC(const TString& name,const UInt_t& geoaddress):VM_Module(name,geoaddress){
+CAEN_ADC::CAEN_ADC(const TString& name,const UInt_t& geoaddress):VM_Module(name,geoaddress) {
   fModuleType =kCAENtype;  //CAEN
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////
-Bool_t CAEN_ADC::Unpack(unsigned short *& gpointer){
+Bool_t CAEN_ADC::Unpack(unsigned short *& gpointer) {
   short dat(0);
   short chan(0);
   short ch_hits(0);
@@ -156,7 +154,7 @@ Bool_t CAEN_ADC::Unpack(unsigned short *& gpointer){
   bool flag(1);
   
   //module is suppressed
-  if(*gpointer==0xffff){
+  if(*gpointer==0xffff) {
     gpointer=gpointer+2; //jump over ffff block
     return 1; //returning 1 cause this is NOT bad
   }
@@ -164,15 +162,15 @@ Bool_t CAEN_ADC::Unpack(unsigned short *& gpointer){
   ch_hits = ( *gpointer++ & 0xff00 ) >> 8; //read high byte as low byte
   geoaddress = ( *gpointer++ & 0xf800) >> 11;
   
-  if(geoaddress != fGeoAddress){
+  if(geoaddress != fGeoAddress) {
     std::cout<<geoaddress<<" different from geoaddress in stack: "<< GeoAddress() << " for module "<<GetName() <<std::endl;
     gpointer+=ch_hits*2;
     flag =  0; 
     //THIS is bad, means stack is probably not set up right or there was an incorrectly formatted buffer(which can happen).  
     //Check to find the cause...probably your module stack is not in the right order
   }
-  else{
-    for (short jj=0;jj<ch_hits;jj++){
+  else {
+    for (short jj=0;jj<ch_hits;jj++) {
       dat =  *gpointer++ & 0xfff;
       chan = *gpointer++ & 0x1f;
       SortChVal(chan,dat);
@@ -184,11 +182,11 @@ Bool_t CAEN_ADC::Unpack(unsigned short *& gpointer){
   return flag;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////
-MESY_QDC::MESY_QDC(const TString& name,const UInt_t& geoaddress):VM_Module(name,geoaddress){
+MESY_QDC::MESY_QDC(const TString& name,const UInt_t& geoaddress):VM_Module(name,geoaddress) {
   fModuleType = kMESYtype;  //MESY
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////
-Bool_t MESY_QDC::Unpack(unsigned short *& gpointer){
+Bool_t MESY_QDC::Unpack(unsigned short *& gpointer) {
   short dat, chan;
   unsigned short ovfl,testresolution;
   short shortwords;
@@ -196,7 +194,7 @@ Bool_t MESY_QDC::Unpack(unsigned short *& gpointer){
   unsigned short * zpointer; zpointer = gpointer;
   int flag(1);
 
-  if(*zpointer==0xffff){ //module is suppressed
+  if(*zpointer==0xffff) { //module is suppressed
     gpointer = gpointer + 2 ;
     return 1; //this is not bad so just return 1;
   }
@@ -210,19 +208,19 @@ Bool_t MESY_QDC::Unpack(unsigned short *& gpointer){
   ModuleID = *zpointer++ & 0x00ff;
   
   
-  if(ModuleID != fGeoAddress ){
+  if(ModuleID != fGeoAddress ) {
     std::cout<<ModuleID<<" different from geoaddress in stack: "<< GeoAddress()<<std::endl;
     gpointer+=shortwords; //move to expected end of this part of buffer
 
     flag = 0; //THIS is bad, means stack is probably not set up right or there was an incorrectly formatted buffer(which can happen).  Check to find the cause...probably your module stack is not in the right order
   }
-  else{
-    while( zpointer < ( gpointer + shortwords)){
+  else {
+    while( zpointer < ( gpointer + shortwords)) {
       ovfl = (*zpointer & 0x4000 )>>14 ; 
       dat = *zpointer++ & 0xfff;
       chan = *zpointer++ & 0x1f;
       
-      if (!ovfl){
+      if (!ovfl) {
 	SortChVal(chan,dat);
       }
       else dat = 0;
@@ -235,11 +233,11 @@ Bool_t MESY_QDC::Unpack(unsigned short *& gpointer){
   return flag;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-CHINP::CHINP(const UShort_t& modsize,const TString& name,const UInt_t& geoaddress):VM_Module(modsize,name,geoaddress){
+CHINP::CHINP(const UShort_t& modsize,const TString& name,const UInt_t& geoaddress):VM_Module(modsize,name,geoaddress) {
   fModuleType =kCHINPtype; 
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-Bool_t CHINP::Unpack(unsigned short *& gpointer){
+Bool_t CHINP::Unpack(unsigned short *& gpointer) {
 
 
   UInt_t  channelId, timeStamp[2], channelCount;
@@ -376,7 +374,7 @@ Bool_t CHINP::Unpack(unsigned short *& gpointer){
 
   //--ddc And now the error they ignored... if the channelcount is too small
   //for the wordcount.. make sure we jump past the wordcount.
-  if(wordCount > (channelCount*3 + 7)){
+  if(wordCount > (channelCount*3 + 7)) {
     gpointer=gpointer+(wordCount-(channelCount*3+7));
   }
 
@@ -389,21 +387,21 @@ Bool_t CHINP::Unpack(unsigned short *& gpointer){
 }
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-UInt_t CHINP::AddBranch(TTree* _tree){
+UInt_t CHINP::AddBranch(TTree* _tree) {
   b_module = _tree->Branch(Form("%s_hits",GetName()),&hits);
   b_module = _tree->Branch(Form("%s_energies",GetName()),&energies);
   b_module = _tree->Branch(Form("%s_times",GetName()),&times);
   return 0;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////
-UInt_t CHINP::SetBranch(TTree* _tree){
-  if(_tree->GetBranch(GetName())){   
+UInt_t CHINP::SetBranch(TTree* _tree) {
+  if(_tree->GetBranch(GetName())) {   
     //--ddc hmm.    _tree->SetBranchAddress(GetName(),&fChValue, &b_module);  
     _tree->SetBranchAddress(Form("%s_hits",GetName()),&hits,&b_module);
     _tree->SetBranchAddress(Form("%s_energies",GetName()),&energies,&b_module);
     _tree->SetBranchAddress(Form("%s_times",GetName()),&times,&b_module);
   }
-  else{
+  else {
     std::cout<<"no "<<GetName()<<" present in Tree, Are you sure this rootfile is compatible with this stack?"<<std::endl;
     return 0;
   }
@@ -411,10 +409,10 @@ UInt_t CHINP::SetBranch(TTree* _tree){
   return 1;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////
-void CHINP::Reset(){
+void CHINP::Reset() {
   //Reset all values stored in module channels
   fValid = 0;
-  for(unsigned int i=0;i<NumOfCh();i++){
+  for(unsigned int i=0;i<NumOfCh();i++) {
     fChValue[i] = 0;
   }
   //and in vectors...

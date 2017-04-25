@@ -130,8 +130,7 @@ template<class T,int n>
 class ZeroedArray {
   T histo[n];
 public:
-  ZeroedArray()
-  {
+  ZeroedArray() {
     for(int i = 0; i < n; i++)
       histo[i] = 0;
   }
@@ -141,7 +140,7 @@ public:
 
 ////////////////////////////////////////////////////////
 //- Main function -------------------------------------------------------------  
-int evt2root_NSCL11_mADC(){
+int evt2root_NSCL11_mADC() {
 
   gROOT->Reset();
 
@@ -165,7 +164,7 @@ int evt2root_NSCL11_mADC(){
     cout << "*** Error: could not open " << files_list << endl;
     return 0;
   }
-  else{
+  else {
     cout << "File " << files_list << " opened." <<endl;
     ListEVT >> aux >> aux >> aux >> OutputROOTFile;
   }
@@ -244,7 +243,7 @@ int evt2root_NSCL11_mADC(){
     cout << "*** Error: could not open " << files_list << endl;
     return 0;
   }
-  else{
+  else {
     // cout << "File " << files_list << " opened." <<endl;
     ListEVT >> aux >> aux >> data_dir;
   }
@@ -302,7 +301,7 @@ int evt2root_NSCL11_mADC(){
       evtfile.read(buffer+8,*(unsigned int*)buffer-8);
 
 	//--ddc daq11, the data starts right after the body subheader, which should be zero.
-	if( *(unsigned int*)(buffer+8) > 0 ){
+	if( *(unsigned int*)(buffer+8) > 0 ) {
 	  cout << "unexpected subheader..." << endl;
 	}
 
@@ -329,7 +328,7 @@ int evt2root_NSCL11_mADC(){
       default: type=0;
       }
       
-      switch(type){
+      switch(type) {
 
       case 11: 
 	runNum = *(epoint+8);
@@ -375,7 +374,7 @@ int evt2root_NSCL11_mADC(){
 // Function where the root objects are filled.
 ////////////////////////////////////////////////////////////////////////////
 
-void ReadPhysicsBuffer(){
+void ReadPhysicsBuffer() {
 
   Nevents = 1;
   TotEvents += Nevents;
@@ -406,7 +405,7 @@ void ReadPhysicsBuffer(){
 	unsigned short time = (int) chinp1->fChValue[id+1];
 	
 	//time = time;
-	if(chanNum<16){ 	   
+	if(chanNum<16) { 	   
 	  HitPattern_MB1->Fill(chipNum*16-16+chanNum);
 	  ChanEn_MB1->Fill(chipNum*16-16+chanNum,energy);
 	  ChanT_MB1->Fill(chipNum*16-16+chanNum,time);
@@ -417,8 +416,7 @@ void ReadPhysicsBuffer(){
           Si.Energy[Si.Nhits]=energy;
           Si.Time[Si.Nhits++]=time;	    
 	}
-	else
-	  {
+	else {
 	    //No problem
 	  }
       }//end of for (istrip)
@@ -494,7 +492,7 @@ void ReadPhysicsBuffer(){
     epoint += words+1; // This skips the rest of the event
     ///////////////////////////////////////////////////////////////////////////////////  
     //---------------------------------------------------
-    for(int i=0;i<32;i++){
+    for(int i=0;i<32;i++) {
       ADC.ID[ADC.Nhits] = 2;
       ADC.ChNum[ADC.Nhits] =i;
       ADC.Data[ADC.Nhits++] = (Int_t) caen_adc1->fChValue[i];
@@ -502,7 +500,7 @@ void ReadPhysicsBuffer(){
       PC_vs_Chan1->Fill(i,caen_adc1->fChValue[i]);
     }    
 
-    for(int i=0;i<16;i++){//
+    for(int i=0;i<16;i++) {//
       ADC.ID[ADC.Nhits] = 3;
       ADC.ChNum[ADC.Nhits] =i;
       ADC.Data[ADC.Nhits++] = (Int_t) caen_adc2->fChValue[i];   
@@ -510,7 +508,7 @@ void ReadPhysicsBuffer(){
       PC_vs_Chan2->Fill(i,caen_adc2->fChValue[i]);
     }
     //---------------------------------------------------
-    for(int i=0;i<32;i++){  
+    for(int i=0;i<32;i++) {  
       mADC.ID[mADC.Nhits] = 1;
       mADC.ChNum[mADC.Nhits] =i;
       mADC.Data[mADC.Nhits++] = (Int_t) mesy_adc1->fChValue[i];
@@ -518,7 +516,7 @@ void ReadPhysicsBuffer(){
       CsI_vs_Chan_MESY1->Fill(i,mesy_adc1->fChValue[i]);     
     }  
 
-    for(int i=0;i<32;i++){
+    for(int i=0;i<32;i++) {
       mADC.ID[mADC.Nhits] = 2;
       mADC.ChNum[mADC.Nhits] =i;
       mADC.Data[mADC.Nhits++] = (Int_t) caen_adc3->fChValue[i];  
@@ -526,8 +524,8 @@ void ReadPhysicsBuffer(){
       CsI_vs_Chan_CAEN->Fill(i,caen_adc3->fChValue[i]);
     }   
     //---------------------------------------------------
-    for(int i=0;i<8;i++){
-      if( i==0 || i ==7){
+    for(int i=0;i<8;i++) {
+      if( i==0 || i ==7) {
 	TDC.ID[TDC.Nhits] = 12;
 	TDC.ChNum[TDC.Nhits] =i;
 	TDC.Data[TDC.Nhits++] = (Int_t) caen_tdc1->fChValue[i];   

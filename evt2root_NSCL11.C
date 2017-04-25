@@ -79,7 +79,7 @@ CAENHit ADC;
 CAENHit TDC; 
 ////////////////////////////////////////////////////////
 //- Main function -------------------------------------------------------------  
-int evt2root_NSCL11(){
+int evt2root_NSCL11() {
 
   gROOT->Reset();
 
@@ -103,7 +103,7 @@ int evt2root_NSCL11(){
     cout << "*** Error: could not open " << files_list << endl;
     return 0;
   }
-  else{
+  else {
     cout << "File " << files_list << " opened." <<endl;
     ListEVT >> aux >> aux >> aux >> OutputROOTFile;
   }
@@ -161,7 +161,7 @@ int evt2root_NSCL11(){
     cout << "*** Error: could not open " << files_list << endl;
     return 0;
   }
-  else{
+  else {
     // cout << "File " << files_list << " opened." <<endl;
     ListEVT >> aux >> aux >> data_dir;
   }
@@ -241,7 +241,7 @@ int evt2root_NSCL11(){
       default: type=0;
       }
       
-      switch(type){
+      switch(type) {
 
       case 11: 
 	runNum = *(epoint+8);
@@ -287,7 +287,7 @@ int evt2root_NSCL11(){
 // Function where the root objects are filled.
 ////////////////////////////////////////////////////////////////////////////
 
-void ReadPhysicsBuffer(){
+void ReadPhysicsBuffer() {
 
   Nevents = 1;
   TotEvents += Nevents;
@@ -328,7 +328,7 @@ void ReadPhysicsBuffer(){
 	//========================MB1===============================================
 	time = time;
 	//time = 16384-time;
-	if(chanNum<16){ 
+	if(chanNum<16) { 
 	  if (chipNum == 1 || chipNum == 2 ) energy =16384-energy;
 	  if (chipNum == 3 || chipNum == 4 ) energy =energy;				
 	  if (chipNum == 5 || chipNum == 6 ) energy =16384-energy;
@@ -348,8 +348,7 @@ void ReadPhysicsBuffer(){
           Si.Energy[Si.Nhits]=energy;
           Si.Time[Si.Nhits++]=time;	    
 	}
-	else
-	  {
+	else {
 	    //No problem
 	  } 
 	fpoint +=3;
@@ -386,7 +385,7 @@ void ReadPhysicsBuffer(){
 	//==============================MB2========================================
 	time = time;
 	//time = 16384-time;
-	if(chanNum<16){ 
+	if(chanNum<16) { 
 	  if (chipNum == 1 || chipNum == 2 ) energy =16384-energy;
 	  if (chipNum == 3 || chipNum == 4 ) energy =energy;	
 	  if (chipNum == 5 || chipNum == 6 ) energy =16384-energy;
@@ -423,8 +422,8 @@ void ReadPhysicsBuffer(){
        	
     if (CAEN==0xcccc) CAENCounter++;
     	    
-    while (fpoint < epoint + words){
-      if(*fpoint == 0xffff ){
+    while (fpoint < epoint + words) {
+      if(*fpoint == 0xffff ) {
 	fpoint++;
 	continue;
       }
@@ -437,7 +436,7 @@ void ReadPhysicsBuffer(){
 
       int i;
 		      
-      for (i=0;i<chanCount;i++){
+      for (i=0;i<chanCount;i++) {
 	if(i>31) continue;
 
 	unsigned short ov  = (*gpoint&0x1000)>>12;
@@ -449,14 +448,14 @@ void ReadPhysicsBuffer(){
 	if (geo == GEOaddress) {
 	  ///////////////////////////////////////////	
 	  ////for CsI 17 && mADC 9 && 10;
-	  //if((GEOaddress == 2 && chn<32) || (GEOaddress == 3 && chn<32) || (GEOaddress == 17 && chn<32)){
+	  //if((GEOaddress == 2 && chn<32) || (GEOaddress == 3 && chn<32) || (GEOaddress == 17 && chn<32)) {
 	  //for IC GEOaddress 3 && chn ==24 && chn ==28
 
 	  ///////////////////////////////////////////	  
 	  ////for PC & IC
-	//if((GEOaddress == 2 && chn<32) || (GEOaddress == 3 && chn<16)){
-	//if((GEOaddress == 2 && chn<32) || (GEOaddress == 3 && chn<32)){
-	  if((GEOaddress == 2 && chn<32) || (GEOaddress == 3 && chn<16) || (GEOaddress == 3 && (chn==24 || chn==28))){
+	//if((GEOaddress == 2 && chn<32) || (GEOaddress == 3 && chn<16)) {
+	//if((GEOaddress == 2 && chn<32) || (GEOaddress == 3 && chn<32)) {
+	  if((GEOaddress == 2 && chn<32) || (GEOaddress == 3 && chn<16) || (GEOaddress == 3 && (chn==24 || chn==28))) {
 	    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	    //// when you run without CAEN data i.e. Si-Alpha cal in vacuum
 	    //// turn this part off
@@ -479,12 +478,12 @@ void ReadPhysicsBuffer(){
 
 	  if (GEOaddress == 12 && (chn == 0 || chn == 7)) {
 	//if (GEOaddress == 12 && chn<32) {
-	    if (TDC.Nhits >= MaxCaenHits){
+	    if (TDC.Nhits >= MaxCaenHits) {
 	      continue;
 	    }
 	    TDC.ID[TDC.Nhits] = GEOaddress-10;	   
             TDC.ChNum[TDC.Nhits] = chn;
-	    if (chn==7 && dat==1026){
+	    if (chn==7 && dat==1026) {
 	      //cout << TDC.Nhits << "  " << ADC.Nhits << "  " << Si.Nhits << endl;
 	    }
             TDC.Data[TDC.Nhits++] = dat;
@@ -506,7 +505,7 @@ void ReadPhysicsBuffer(){
 	EOB_NEvents = EOB_l+(EOB_h&0x00ff)*65536+1;
       } 
 
-      while ((gpoint < epoint + words )&&(*gpoint==0xffff)){
+      while ((gpoint < epoint + words )&&(*gpoint==0xffff)) {
 	gpoint ++;
       }
 

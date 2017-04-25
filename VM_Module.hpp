@@ -21,7 +21,7 @@ the pointer to PhysicsEventBuffer gets passed to each Module
 
 #ifndef __VM_MODULE_H_
 #define __VM_MODULE_H_
-//C and C++ libraries.
+//C and C++ libraries
 #include <iostream>
 #include <iomanip>
 #include <math.h>
@@ -187,7 +187,7 @@ public:
     //    UInt_t ind=32*(chipboard-1)+channel; 
     UInt_t ind=32*(chipboard-1)*2+ channel*2;
     int flag=ind;
-    if(ind<fNumOfCh){
+    if(ind<fNumOfCh) {
       SortChVal(ind,e);
     } else {
       flag=-1;
@@ -198,7 +198,7 @@ public:
     //    UInt_t ind=fNumOfCh/2+32*(chipboard-1)+channel;
     UInt_t ind=32*(chipboard-1)*2+channel*2+1;
     int flag=ind;
-    if(ind<fNumOfCh){
+    if(ind<fNumOfCh) {
       SortChVal(ind,t);
     } else {
       flag = -1;
@@ -212,11 +212,11 @@ public:
     return time; 
   }
 
-  virtual UInt_t chipEnergy(UInt_t energy,int chip,TString modName){
+  virtual UInt_t chipEnergy(UInt_t energy,int chip,TString modName) {
 
     int val;
 
-    if( (val=modName.CompareTo("hinp1"))==0){
+    if( (val=modName.CompareTo("hinp1"))==0) {
 
       switch (chip) {
 	
@@ -239,7 +239,7 @@ public:
       }
     }
 
-    if( (val=modName.CompareTo("hinp2"))==0){
+    if( (val=modName.CompareTo("hinp2"))==0) {
       switch (chip) {
       case 1:
       case 2:
@@ -267,10 +267,10 @@ public:
 
   VMUSBMARK(){};
   VMUSBMARK(const TString& name,const UInt_t& geoaddress):
-    VM_Module( 1 ,name, geoaddress){
+    VM_Module( 1 ,name, geoaddress) {
   }
 
-  virtual Bool_t Unpack(unsigned short*& gpointer){
+  virtual Bool_t Unpack(unsigned short*& gpointer) {
     Bool_t retval=true;
     UInt_t markvalue = *(gpointer++);
     fChValue[0]=markvalue;
