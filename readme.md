@@ -14,14 +14,14 @@ Two version of this code exist, depending on the electonics setup.
 Version used by Texas A&M University. Adopted & tested for the NSCLDAQ11 version. Note: This version of converter is useful only for the codes that has been  used by LSU group;  the names of the Branches & leaves and also the objects of detector classes  is different for the Codes that has been used by FSU group. 
 
 ### `evt2root_NSCL11_mADC.C`
-Version used by Florida State University, generalized to include Mesytec modules. It takes all types of Modules in the same way & unpacks it.
+Version used by Florida State University, generalized to include unpacking of Mesytec ADC modules. It takes all types of modules in the same way & unpacks it.
 
 ## Requirements
-The following files are required for evt2root rot run.
-* VM_BaseClass.cpp
-* VM_Module.cpp
-* SimpleInPipe.cpp
-* evt_files.lst
+The following files are required for evt2root to run.
+* `VM_BaseClass.cpp`
+* `VM_Module.cpp`
+* `SimpleInPipe.cpp`
+* `evt_files.lst`
 
 ## Execution
 To run evt2root, the following macros are loaded.
@@ -66,6 +66,7 @@ The program runs evt2root individually on the files listed in `runs.lst`. The us
 The run-to-run changes in `runs.lst` and `evt_file.lst` are excuded by `.gitignore`. To force the updated files to be saved to the repository, use the command `git add -f foo.bar`.
 
 #### Requires:
+* `data.cpp`
 * `runs.lst`
 * `rootinput.txt`
  

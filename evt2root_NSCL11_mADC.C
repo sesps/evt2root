@@ -3,19 +3,7 @@
 // See readme.md for general instructions.
 // Adopted & tested for the NSCLDAQ11 version.
 //
-// to run it: 
-//  root -l
-//  .x VM_BaseClass.cpp+
-//  .L VM_Module.cpp+
-//  .L SimpleInPipe.cpp+
-//  .x evt2root_NSCL11.C+
-//
-// make sure your .evt files are included in the evt_files.lst
-// 
 // Nabin, ddc, DSG, KTM et.al. // December 2015.
-//
-// It takes all types of Modules in the same way & unpacks it.. 
-// Adapted for MesyTech ADC Unpacking
 //
 // Inputs & Comments are Welcome!           --Nabin
 /////////////////////////////////////////////////////////////////////////////////////
