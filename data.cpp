@@ -1,18 +1,7 @@
-/*
- * Program: data.cpp
- *        Developed by J. Lighthall Jul-Dec 2016
- *
- * Description: Runs evt2root on the files listed in runs.lst. User has option of deleting the 
- * .evt files after conversion. The commands run for each conversion are listed in rootinput.txt.
- * The location of the data files (input) and ROOT files (output) are specified in the code. The
- * use of this code will generate a seperate ROOT file for each run.
- *
- * Requires:
- *        runs.lst
- *        rootinput.txt
- *
- * Output:
- *        evt_files.list
+/* Program: data.cpp
+ * Description: Runs evt2root on the files listed in runs.lst.
+ * See readme.md for general instructions.
+ * Developed by J. Lighthall Jul-Dec 2016
  */
 
 //C and C++ libraries
@@ -24,8 +13,7 @@
 
 using namespace std;
 
-int main()
-{
+int main() {
   int list[99];
   const char* fname="runs.lst"; //name of file with list of run numbers
   
@@ -45,11 +33,10 @@ int main()
   if (ans=='y')
     del=true;
       
-  for(int j=0;j<i;j++)
-    {
-      std::ofstream outfile("evt_files.list"); //name of file referenced in evt2root_NSCL11.C
+  for(int j=0;j<i;j++) {
+      std::ofstream outfile("evt_files.lst"); //name of file referenced in evt2root_NSCL11.C
       string str0 = "/data0/lighthall/data/"; //location of .evt files
-      outfile << "Output ROOT file: /data0/lighthall/root/run" << list[j] << ".root" << endl;
+      outfile << "Output ROOT file: /data0/lighthall/root/raw/run" << list[j] << ".root" << endl;
       outfile << "Data directory: "<< str0 << endl;
       outfile << list[j] << endl;
       system("root -l < rootinput.txt"); //name of file with ROOT command
