@@ -37,7 +37,7 @@
 #include <TGlobal.h> 
 
 //Detectors' libraries
-#include "2015_detclass.h"
+#include "../include/2016_detclass.h"
 #include "configfile.h"
 #include "SimpleInPipe.h"
 #include "VM_Module.hpp"
