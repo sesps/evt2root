@@ -13,6 +13,8 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <math.h>
+#include <unistd.h>
 
 //ROOT libraries
 #include <TFile.h>
@@ -31,9 +33,7 @@
 #include <TBrowser.h>
 #include <TThread.h>
 #include <TStyle.h>
-#include <math.h>
 #include <TGFrame.h>
-#include <unistd.h>
 #include <TGlobal.h> 
 
 //Detectors' libraries
@@ -66,6 +66,8 @@ VMUSBMARK* markb = new VMUSBMARK("Mark B",0xbbbb);
 CHINP* chinp2 = new CHINP(1024,"hinp2", 16);
 
 VMUSBMARK* markc = new VMUSBMARK("Mark C",0xcccc);
+
+// Set VME module names and positions
 CAEN_ADC* caen_adc1 = new CAEN_ADC("First ADC", 2);
 CAEN_ADC* caen_adc2 = new CAEN_ADC("Second ADC", 3);
 MESY_ADC* mesy_adc1 = new MESY_ADC("First MADC", 9);
@@ -198,14 +200,13 @@ int evt2root_NSCL11_mADC() {
   ChanT_MB1 = new TH2I("TiVsCh_MB1","",xbins,0,xbins,ybins,0,4*ybins);
   ChanT_MB2 = new TH2I("TiVsCh_MB2","",xbins,0,xbins,ybins,0,4*ybins);
 
-  xbins=33;
-  ybins=1024;
-  CsI_vs_Chan_CAEN = new TH2I("CsI_vs_Chan_CAEN","",xbins,0,xbins,ybins,0,4*ybins);
-  CsI_vs_Chan_MESY1 = new TH2I("CsI_vs_Chan_MESY1","",xbins,0,xbins,ybins,0,4*ybins);
-  CsI_vs_Chan_MESY2 = new TH2I("CsI_vs_Chan_MESY2","",xbins,0,xbins,ybins,0,4*ybins);
-  PC_vs_Chan1 = new TH2I("PC_vs_Chan1","",xbins,0,xbins,ybins,0,4*ybins);
-  PC_vs_Chan2 = new TH2I("PC_vs_Chan2","",xbins,0,xbins,ybins,0,4*ybins);
-  TDC_vs_Chan = new TH2I("TDC_vs_Chan","",xbins,0,xbins,ybins,0,4*ybins);
+  xbins=32;
+  CsI_vs_Chan_CAEN = new TH2I("CsI_vs_Chan_CAEN","",xbins,0,xbins,ybins,0,ybins);
+  CsI_vs_Chan_MESY1 = new TH2I("CsI_vs_Chan_MESY1","",xbins,0,xbins,ybins,0,ybins);
+  CsI_vs_Chan_MESY2 = new TH2I("CsI_vs_Chan_MESY2","",xbins,0,xbins,ybins,0,ybins);
+  PC_vs_Chan1 = new TH2I("PC_vs_Chan1","",xbins,0,xbins,ybins,0,ybins);
+  PC_vs_Chan2 = new TH2I("PC_vs_Chan2","",xbins,0,xbins,ybins,0,ybins);
+  TDC_vs_Chan = new TH2I("TDC_vs_Chan","",xbins,0,xbins,ybins,0,ybins);
 
   //List of root objects.
   RootObjects = new TObjArray();
@@ -376,6 +377,8 @@ void ReadPhysicsBuffer() {
     //create pointer inside of each  event
     unsigned short * fpoint = epoint;		    
     words = *fpoint++;  
+
+    // First XLM readout 
     marka->Unpack(fpoint);
     int XLMdata1 = (int) marka->fChValue[0];
     chinp1->Reset();
@@ -392,7 +395,6 @@ void ReadPhysicsBuffer() {
 	unsigned short energy = (int) chinp1->fChValue[id];
 	unsigned short time = (int) chinp1->fChValue[id+1];
 	
-	//time = time;
 	if(chanNum<16) { 	   
 	  HitPattern_MB1->Fill(chipNum*16-16+chanNum);
 	  ChanEn_MB1->Fill(chipNum*16-16+chanNum,energy);
@@ -404,9 +406,6 @@ void ReadPhysicsBuffer() {
           Si.Energy[Si.Nhits]=energy;
           Si.Time[Si.Nhits++]=time;	    
 	}
-	else {
-	    //No problem
-	  }
       }//end of for (istrip)
     }//end of if (XLMdata1) 
 
@@ -424,6 +423,7 @@ void ReadPhysicsBuffer() {
     }
 
     chinp2->Reset();
+
     if (XLMdata2==0xbbbb) {
       if(!chinp2->Unpack(fpoint)) break;
 
@@ -436,7 +436,6 @@ void ReadPhysicsBuffer() {
 	  unsigned short energy = (int) chinp2->fChValue[id];
 	  unsigned short time = (int) chinp2->fChValue[id+1];
 
-	  //time = time;
 	  if(chanNum<16) { 	    
 	    HitPattern_MB2->Fill(chipNum*16-16+chanNum);
 	    ChanEn_MB2->Fill(chipNum*16-16+chanNum,energy);
@@ -449,7 +448,7 @@ void ReadPhysicsBuffer() {
 	    Si.Time[Si.Nhits++]=time;
 	  }	
 	}// end second for(istrip)
-    }//end if(XMLdata2)
+    }//end if(XLMdata2)
 	    
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //--- CAEN readout section -------------------------------------------
@@ -488,7 +487,7 @@ void ReadPhysicsBuffer() {
       PC_vs_Chan1->Fill(i,caen_adc1->fChValue[i]);
     }    
 
-    for(int i=0;i<16;i++) {//
+    for(int i=0;i<32;i++) {//must loop over second-half of ADC to read in IC
       ADC.ID[ADC.Nhits] = 3;
       ADC.ChNum[ADC.Nhits] =i;
       ADC.Data[ADC.Nhits++] = (Int_t) caen_adc2->fChValue[i];   
