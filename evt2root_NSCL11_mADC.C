@@ -78,8 +78,8 @@ CAEN_ADC* caen_adc3 = new CAEN_ADC("Third ADC", 17);
 float CalParamF[128][3];
 float CalParamB[128][3];
 
-TH1I* HitPattern_MB1;
-TH1I* HitPattern_MB2;
+TH1I* HitPattern_MB1; 
+TH1I* HitPattern_MB2; 
 TH2I* ChanEn_MB1;
 TH2I* ChanEn_MB2;
 TH2I* ChanT_MB1;
@@ -95,13 +95,9 @@ int unsigned EOB_NEvents=0;
 int unsigned ASICsCounter=0;
 int unsigned CAENCounter=0;
 
-//TH1I* hCaenADC[3][32];
-//TH1I* hCaenTDC[1][32];
-//TH1I* hMADC[2][32];
-
-TH2I* CsI_vs_Chan_CAEN;
+TH2I* CsI_vs_Chan_CAEN; 
 TH2I* CsI_vs_Chan_MESY1;
-TH2I* CsI_vs_Chan_MESY2;
+//TH2I* CsI_vs_Chan_MESY2;
 TH2I* PC_vs_Chan1;
 TH2I* PC_vs_Chan2;
 TH2I* TDC_vs_Chan;
@@ -203,7 +199,7 @@ int evt2root_NSCL11_mADC() {
   xbins=32;
   CsI_vs_Chan_CAEN = new TH2I("CsI_vs_Chan_CAEN","",xbins,0,xbins,ybins,0,ybins);
   CsI_vs_Chan_MESY1 = new TH2I("CsI_vs_Chan_MESY1","",xbins,0,xbins,ybins,0,ybins);
-  CsI_vs_Chan_MESY2 = new TH2I("CsI_vs_Chan_MESY2","",xbins,0,xbins,ybins,0,ybins);
+  //CsI_vs_Chan_MESY2 = new TH2I("CsI_vs_Chan_MESY2","",xbins,0,xbins,ybins,0,ybins);
   PC_vs_Chan1 = new TH2I("PC_vs_Chan1","",xbins,0,xbins,ybins,0,ybins);
   PC_vs_Chan2 = new TH2I("PC_vs_Chan2","",xbins,0,xbins,ybins,0,ybins);
   TDC_vs_Chan = new TH2I("TDC_vs_Chan","",xbins,0,xbins,ybins,0,ybins);
@@ -220,7 +216,7 @@ int evt2root_NSCL11_mADC() {
 
   RootObjects->Add(CsI_vs_Chan_CAEN);
   RootObjects->Add(CsI_vs_Chan_MESY1);
-  RootObjects->Add(CsI_vs_Chan_MESY2);
+  //RootObjects->Add(CsI_vs_Chan_MESY2);
   RootObjects->Add(PC_vs_Chan1);
   RootObjects->Add(PC_vs_Chan2);
   RootObjects->Add(TDC_vs_Chan); 
@@ -483,7 +479,6 @@ void ReadPhysicsBuffer() {
       ADC.ID[ADC.Nhits] = 2;
       ADC.ChNum[ADC.Nhits] =i;
       ADC.Data[ADC.Nhits++] = (Int_t) caen_adc1->fChValue[i];
-      //hCaenADC[0][i]->Fill(caen_adc1->fChValue[i]);
       PC_vs_Chan1->Fill(i,caen_adc1->fChValue[i]);
     }    
 
@@ -491,7 +486,6 @@ void ReadPhysicsBuffer() {
       ADC.ID[ADC.Nhits] = 3;
       ADC.ChNum[ADC.Nhits] =i;
       ADC.Data[ADC.Nhits++] = (Int_t) caen_adc2->fChValue[i];   
-      //hCaenADC[1][i]->Fill(caen_adc2->fChValue[i]);  
       PC_vs_Chan2->Fill(i,caen_adc2->fChValue[i]);
     }
     //---------------------------------------------------
@@ -499,7 +493,6 @@ void ReadPhysicsBuffer() {
       mADC.ID[mADC.Nhits] = 1;
       mADC.ChNum[mADC.Nhits] =i;
       mADC.Data[mADC.Nhits++] = (Int_t) mesy_adc1->fChValue[i];
-      //hMADC[0][i]->Fill(mesy_adc1->fChValue[i]);
       CsI_vs_Chan_MESY1->Fill(i,mesy_adc1->fChValue[i]);     
     }  
 
@@ -507,7 +500,6 @@ void ReadPhysicsBuffer() {
       mADC.ID[mADC.Nhits] = 2;
       mADC.ChNum[mADC.Nhits] =i;
       mADC.Data[mADC.Nhits++] = (Int_t) caen_adc3->fChValue[i];  
-      //hCaenADC[2][i]->Fill(caen_adc3->fChValue[i]);
       CsI_vs_Chan_CAEN->Fill(i,caen_adc3->fChValue[i]);
     }   
     //---------------------------------------------------
@@ -516,7 +508,6 @@ void ReadPhysicsBuffer() {
 	TDC.ID[TDC.Nhits] = 12;
 	TDC.ChNum[TDC.Nhits] =i;
 	TDC.Data[TDC.Nhits++] = (Int_t) caen_tdc1->fChValue[i];   
-	//hCaenTDC[0][i]->Fill(caen_tdc1->fChValue[i]);
 	TDC_vs_Chan->Fill(i,caen_tdc1->fChValue[i]);
       }	
     }	    
