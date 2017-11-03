@@ -72,3 +72,12 @@ The run-to-run changes in `runs.lst` and `evt_file.lst` are excuded by `.gitigno
  
 #### Output:
 * `evt_files.lst`
+
+## Data structure
+The ANASEN detectors are read out in the following manner.
+### Silicon
+The silicon detectors are read out by the ASICS motherboards. They use the `ASICHit` detector class and fill the `Si.` branches of the `DataTree`.
+### PC
+The PC signals are first preamplified by Mesytec modules inside the ANASEN chamber. These signals are read out by CAEN ADCs. They use the `CAENHit` detector class and fill the `ADC.` branches of the `DataTree`. Note that the beam diagnostic ionization chamber signals are read out using the spare channels (second half) of ADC 3.
+### CsI
+The CsI detectors are read out by Mesytec ADCs. They use the `mADC` detector class and fill the `mADC.` brances of the `DataTree`.
