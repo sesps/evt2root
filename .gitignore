@@ -1,1 +1,19 @@
+# Prerequisites
+*.d
+
+# Compiled Dynamic libraries
+*.so
+
+# Executables
+*.exe
+*.out
+
+# Emacs
+*~
+\#*#
+
+# temporary Git files
+*~*
+
+# List files
 *.lst
