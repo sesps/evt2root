@@ -59,11 +59,9 @@ TFile* fileR;
 TTree* DataTree;
 TObjArray* RootObjects;
 
-VMUSBMARK* markc = new VMUSBMARK("Mark C",0xcccc);
-
 // Set VME module names and positions
-CAEN_ADC* caen_adc1 = new CAEN_ADC("First ADC", 0);
-CAEN_TDC* caen_tdc1 = new CAEN_TDC("First TDC", 11);
+CAEN_ADC* caen_adc1 = new CAEN_ADC("First ADC", 2);
+CAEN_TDC* caen_tdc1 = new CAEN_TDC("First TDC", 5);
 
 float CalParamF[128][3];
 float CalParamB[128][3];
@@ -314,14 +312,6 @@ void ReadPhysicsBuffer() {
     unsigned short * fpoint = epoint;		    
     words = *fpoint++;  
 
-    markc->Unpack(fpoint);
-    int CAEN = (int) markc->fChValue[0];
-		
-    while (CAEN != 0xcccc) {
-      CAEN = *fpoint++;
-      if(fpoint>epoint+words) break;
-    }
-	
     caen_adc1->Reset();
     caen_tdc1->Reset();
 
