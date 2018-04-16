@@ -56,13 +56,6 @@ TObjArray* RootObjects;
 float CalParamF[128][3];
 float CalParamB[128][3];
 
-TH1I* HitPattern_MB1;
-TH1I* HitPattern_MB2;
-TH2I* ChanEn_MB1;
-TH2I* ChanEn_MB2;
-TH2I* ChanT_MB1;
-TH2I* ChanT_MB2;
-
 int unsigned Nevents;
 int unsigned TotEvents=0;
 int unsigned words;  
@@ -73,8 +66,10 @@ int unsigned EOB_NEvents=0;
 int unsigned ASICsCounter=0;
 int unsigned CAENCounter=0;
 
+TH2I* ADC_vs_Chan;
+TH2I* TDC_vs_Chan;
+
 //- Detectors' classes --------------------------------------------------------  
-ASICHit Si;
 CAENHit ADC;
 CAENHit TDC; 
 ////////////////////////////////////////////////////////
@@ -117,13 +112,6 @@ int evt2root_NSCL11() {
   // Data Tree
   DataTree = new TTree("DataTree","DataTree");
 
-  DataTree->Branch("Si.Nhits",&Si.Nhits,"SiNhits/I");
-  DataTree->Branch("Si.MBID",Si.MBID,"MBID[SiNhits]/I");
-  DataTree->Branch("Si.CBID",Si.CBID,"CBID[SiNhits]/I");
-  DataTree->Branch("Si.ChNum",Si.ChNum,"ChNum[SiNhits]/I");
-  DataTree->Branch("Si.Energy",Si.Energy,"Energy[SiNhits]/I");
-  DataTree->Branch("Si.Time",Si.Time,"Time[SiNhits]/I");
-
   DataTree->Branch("ADC.Nhits",&ADC.Nhits,"ADCNhits/I");
   DataTree->Branch("ADC.ID",ADC.ID,"ID[ADCNhits]/I");
   DataTree->Branch("ADC.ChNum",ADC.ChNum,"ChNum[ADCNhits]/I");
@@ -137,23 +125,15 @@ int evt2root_NSCL11() {
   // Histograms
   Int_t xbins=288;
   Int_t ybins=4096;
-  HitPattern_MB1 = new TH1I("HitPattern_MB1","",xbins,0,xbins);
-  HitPattern_MB2 = new TH1I("HitPattern_MB2","",xbins,0,xbins);
-  ChanEn_MB1 = new TH2I("EnVsCh_MB1","",xbins,0,xbins,ybins,0,4*ybins);
-  ChanEn_MB2 = new TH2I("EnVsCh_MB2","",xbins,0,xbins,ybins,0,4*ybins);
-  ChanT_MB1 = new TH2I("TiVsCh_MB1","",xbins,0,xbins,ybins,0,4*ybins);
-  ChanT_MB2 = new TH2I("TiVsCh_MB2","",xbins,0,xbins,ybins,0,4*ybins);
-  
+  ADC_vs_Chan = new TH2I("ADC_vs_Chan","",xbins,0,xbins,ybins,0,ybins);
+  TDC_vs_Chan = new TH2I("TDC_vs_Chan","",xbins,0,xbins,ybins,0,ybins);
+
   //List of root objects.
   RootObjects = new TObjArray();
   RootObjects->Add(DataTree);
-  RootObjects->Add(HitPattern_MB1);
-  RootObjects->Add(HitPattern_MB2);
-  RootObjects->Add(ChanEn_MB1);
-  RootObjects->Add(ChanEn_MB2);
-  RootObjects->Add(ChanT_MB1);
-  RootObjects->Add(ChanT_MB2);
-  
+  RootObjects->Add(ADC_vs_Chan);
+  RootObjects->Add(TDC_vs_Chan); 
+
   string data_dir = "";
 
   //Check if this file exists.
@@ -218,6 +198,11 @@ int evt2root_NSCL11() {
       evtfile.read(buffer,8);
       evtfile.read(buffer+8,*(unsigned int*)buffer-8);
 
+	//--ddc daq11, the data starts right after the body subheader, which should be zero.
+	if( *(unsigned int*)(buffer+8) > 0 ) {
+	  cout << "unexpected subheader..." << endl;
+	}
+
       if (!evtfile) {
 	//this could be a bad file or the file is subdivided into parts
 	break;
@@ -273,9 +258,9 @@ int evt2root_NSCL11() {
   cout << setprecision(3);
   cout << "Total buffers = " << Nbuffers << endl;
   cout << "  Physics buffers = " << BufferPhysics  << " (" <<100.0*BufferPhysics/Nbuffers<< "\% of total buffers)"<< endl;  
-  cout << "Number of events based on buffer headers: " << TotEvents << endl; 
-  cout << "Number of events based on event counter: " <<  EventCounter << endl;
-    
+  cout << "  Number of events based on buffer headers: " << TotEvents << endl; 
+  cout << "  Number of events based on event counter:  " <<  EventCounter << endl;
+ 
   RootObjects->Write();
   fileR->Close();	
   
@@ -293,135 +278,13 @@ void ReadPhysicsBuffer() {
   TotEvents += Nevents;
 
   for (unsigned int ievent=0;ievent<Nevents;ievent++) {
-    Si.ResetASICHit();
     ADC.ResetCAENHit();
     TDC.ResetCAENHit();
-
+    
     //create pointer inside of each  event
-    unsigned short * fpoint = epoint;
-    words = *fpoint++;
-    int XLMdata1 = *fpoint++;
-  
-    if (XLMdata1==0xaaaa) {
-      ASICsCounter++;
-   
-      fpoint +=3 ;
-      unsigned short Nstrips = *fpoint;
+    unsigned short * fpoint = epoint;		    
+    words = *fpoint++;  
 
-      //cout << Nstrips << endl ;
-
-      fpoint+=5;
-
-      for (int istrip=0;istrip<Nstrips;istrip++) {
-	//cout << "istrip=" << istrip << endl;
-	unsigned short *gpoint = fpoint;
-	unsigned short id = *gpoint;
-	unsigned short chipNum = (id&0x1FE0)>>5;
-	unsigned short chanNum = id& 0x1F;
-	//cout << "chip=" << chipNum << " ch=" << chanNum;
-	gpoint++;
-	int energy = *gpoint;
-	gpoint++;
-	unsigned short time = *gpoint;
-	//cout << " e=" << energy << " t=" << time << endl;
-
-	//========================MB1===============================================
-	time = time;
-	//time = 16384-time;
-	if(chanNum<16) { 
-	  if (chipNum == 1 || chipNum == 2 ) energy =16384-energy;
-	  if (chipNum == 3 || chipNum == 4 ) energy =energy;				
-	  if (chipNum == 5 || chipNum == 6 ) energy =16384-energy;
-	  if (chipNum == 7 || chipNum == 8 ) energy =energy;
-	  if (chipNum == 9 || chipNum == 10 ) energy =16384-energy;
-	  if (chipNum == 11 || chipNum == 12 ) energy =16384-energy;
-	  if (chipNum == 13 || chipNum == 14 ) energy =16384-energy;
-	  //============================================================================   
-
-	  HitPattern_MB1->Fill(chipNum*16-16+chanNum);
-	  ChanEn_MB1->Fill(chipNum*16-16+chanNum,energy);
-	  ChanT_MB1->Fill(chipNum*16-16+chanNum,time);
-        
-          Si.MBID[Si.Nhits]=1;
-          Si.CBID[Si.Nhits]=chipNum;
-          Si.ChNum[Si.Nhits]=chanNum;
-          Si.Energy[Si.Nhits]=energy;
-          Si.Time[Si.Nhits++]=time;	    
-	}
-	else {
-	    //No problem
-	  } 
-	fpoint +=3;
-      }// end for(istrip)
-    }//end if(XLMdata1)	
-  
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++	    	     	
-    int XLMdata2 = *fpoint++;
-    int counter;
-    counter = 0;
-    while (XLMdata2 != 0xbbbb) {
-      XLMdata2 = *fpoint++;
-      counter++;
-      if (counter>10) break;
-    }
-
-    if (XLMdata2==0xbbbb) {              
-      ASICsCounter++;
-      fpoint += 3;
-
-      unsigned short Nstrips = *fpoint;	      
-      fpoint+=5;
-	      
-      for (int istrip=0;istrip<Nstrips;istrip++) {
-	unsigned short *gpoint = fpoint;
-	unsigned short id = *gpoint;
-	unsigned short chipNum = (id&0x1FE0)>>5;
-	unsigned short chanNum = id& 0x1F;
-	gpoint++;
-	unsigned short energy = *gpoint;
-	gpoint++;
-	unsigned short time = *gpoint;
-
-	//==============================MB2========================================
-	time = time;
-	//time = 16384-time;
-	if(chanNum<16) { 
-	  if (chipNum == 1 || chipNum == 2 ) energy =16384-energy;
-	  if (chipNum == 3 || chipNum == 4 ) energy =energy;	
-	  if (chipNum == 5 || chipNum == 6 ) energy =16384-energy;
-	  if (chipNum == 7 || chipNum == 8 ) energy =energy;
-	  if (chipNum == 9 || chipNum == 10 ) energy =16384-energy;			
-	  if (chipNum == 11 || chipNum == 12 ) energy =energy;
-	  //===========================================================================
-
-	  HitPattern_MB2->Fill(chipNum*16-16+chanNum);
-	  ChanEn_MB2->Fill(chipNum*16-16+chanNum,energy);
-	  ChanT_MB2->Fill(chipNum*16-16+chanNum,time);
-	 
-          Si.MBID[Si.Nhits]=2;
-          Si.CBID[Si.Nhits]=chipNum;
-          Si.ChNum[Si.Nhits]=chanNum;
-          Si.Energy[Si.Nhits]=energy;
-          Si.Time[Si.Nhits++]=time;
-		
-	  fpoint +=3;
-        }
-      }// end second for(istrip)
-    }//end if(XMLdata2)
-	    
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    //--- CAEN readout section -------------------------------------------
-    //cout << "CAEN" << endl;
-
-    int CAEN = *fpoint++;
-	
-    while (CAEN != 0xcccc) {
-      CAEN = *fpoint++;
-      if(fpoint>epoint+words) break;
-    }
-       	
-    if (CAEN==0xcccc) CAENCounter++;
-    	    
     while (fpoint < epoint + words) {
       if(*fpoint == 0xffff ) {
 	fpoint++;
