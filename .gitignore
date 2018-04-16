@@ -17,3 +17,7 @@
 
 # List files
 *.lst
+
+# linked directories
+/*root
+/*data
