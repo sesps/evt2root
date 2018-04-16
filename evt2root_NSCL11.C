@@ -35,7 +35,7 @@
 #include <TObjArray.h>
 
 //Detectors' libraries
-#include "../include/2016_detclass.h"
+#include "2016_detclass.h"
 
 using namespace std;
 //////////////////////////////////////////////////////////////////////////////////////
