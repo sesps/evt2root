@@ -59,31 +59,14 @@ TFile* fileR;
 TTree* DataTree;
 TObjArray* RootObjects;
 
-VMUSBMARK* marka = new VMUSBMARK("Mark A",0xaaaa);
-CHINP* chinp1 = new CHINP(1024,"hinp1", 8);
-
-VMUSBMARK* markb = new VMUSBMARK("Mark B",0xbbbb);
-CHINP* chinp2 = new CHINP(1024,"hinp2", 16);
-
 VMUSBMARK* markc = new VMUSBMARK("Mark C",0xcccc);
 
 // Set VME module names and positions
-CAEN_ADC* caen_adc1 = new CAEN_ADC("First ADC", 2);
-CAEN_ADC* caen_adc2 = new CAEN_ADC("Second ADC", 3);
-MESY_ADC* mesy_adc1 = new MESY_ADC("First MADC", 9);
-MESY_ADC* mesy_adc2 = new MESY_ADC("Second MADC", 10);
-CAEN_TDC* caen_tdc1 = new CAEN_TDC("First TDC", 12);
-CAEN_ADC* caen_adc3 = new CAEN_ADC("Third ADC", 17);
+CAEN_ADC* caen_adc1 = new CAEN_ADC("First ADC", 0);
+CAEN_TDC* caen_tdc1 = new CAEN_TDC("First TDC", 11);
 
 float CalParamF[128][3];
 float CalParamB[128][3];
-
-TH1I* HitPattern_MB1; 
-TH1I* HitPattern_MB2; 
-TH2I* ChanEn_MB1;
-TH2I* ChanEn_MB2;
-TH2I* ChanT_MB1;
-TH2I* ChanT_MB2;
 
 int unsigned Nevents;
 int unsigned TotEvents=0;
@@ -95,18 +78,12 @@ int unsigned EOB_NEvents=0;
 int unsigned ASICsCounter=0;
 int unsigned CAENCounter=0;
 
-TH2I* CsI_vs_Chan_CAEN; 
-TH2I* CsI_vs_Chan_MESY1;
-//TH2I* CsI_vs_Chan_MESY2;
-TH2I* PC_vs_Chan1;
-TH2I* PC_vs_Chan2;
+TH2I* ADC_vs_Chan;
 TH2I* TDC_vs_Chan;
 
 //- Detectors' classes --------------------------------------------------------  
-ASICHit Si;
 CAENHit ADC;
 CAENHit TDC;
-MesyHit mADC;
 
 /***************************************************************
  * a little construct to have an array initialized with zeroes *
@@ -164,22 +141,10 @@ int evt2root_NSCL11_mADC() {
   // Data Tree
   DataTree = new TTree("DataTree","DataTree");
 
-  DataTree->Branch("Si.Nhits",&Si.Nhits,"SiNhits/I");
-  DataTree->Branch("Si.MBID",Si.MBID,"MBID[SiNhits]/I");
-  DataTree->Branch("Si.CBID",Si.CBID,"CBID[SiNhits]/I");
-  DataTree->Branch("Si.ChNum",Si.ChNum,"ChNum[SiNhits]/I");
-  DataTree->Branch("Si.Energy",Si.Energy,"Energy[SiNhits]/I");
-  DataTree->Branch("Si.Time",Si.Time,"Time[SiNhits]/I");
-
   DataTree->Branch("ADC.Nhits",&ADC.Nhits,"ADCNhits/I");
   DataTree->Branch("ADC.ID",ADC.ID,"ID[ADCNhits]/I");
   DataTree->Branch("ADC.ChNum",ADC.ChNum,"ChNum[ADCNhits]/I");
   DataTree->Branch("ADC.Data",ADC.Data,"Data[ADCNhits]/I");
-
-  DataTree->Branch("mADC.Nhits",&mADC.Nhits,"mADCNhits/I");
-  DataTree->Branch("mADC.ID",mADC.ID,"ID[mADCNhits]/I");
-  DataTree->Branch("mADC.ChNum",mADC.ChNum,"ChNum[mADCNhits]/I");
-  DataTree->Branch("mADC.Data",mADC.Data,"Data[mADCNhits]/I");
 
   DataTree->Branch("TDC.Nhits",&TDC.Nhits,"TDCNhits/I");
   DataTree->Branch("TDC.ID",TDC.ID,"ID[TDCNhits]/I");
@@ -189,36 +154,13 @@ int evt2root_NSCL11_mADC() {
   // Histograms
   Int_t xbins=288;
   Int_t ybins=4096;
-  HitPattern_MB1 = new TH1I("HitPattern_MB1","",xbins,0,xbins);
-  HitPattern_MB2 = new TH1I("HitPattern_MB2","",xbins,0,xbins);
-  ChanEn_MB1 = new TH2I("EnVsCh_MB1","",xbins,0,xbins,ybins,0,4*ybins);
-  ChanEn_MB2 = new TH2I("EnVsCh_MB2","",xbins,0,xbins,ybins,0,4*ybins);
-  ChanT_MB1 = new TH2I("TiVsCh_MB1","",xbins,0,xbins,ybins,0,4*ybins);
-  ChanT_MB2 = new TH2I("TiVsCh_MB2","",xbins,0,xbins,ybins,0,4*ybins);
-
-  xbins=32;
-  CsI_vs_Chan_CAEN = new TH2I("CsI_vs_Chan_CAEN","",xbins,0,xbins,ybins,0,ybins);
-  CsI_vs_Chan_MESY1 = new TH2I("CsI_vs_Chan_MESY1","",xbins,0,xbins,ybins,0,ybins);
-  //CsI_vs_Chan_MESY2 = new TH2I("CsI_vs_Chan_MESY2","",xbins,0,xbins,ybins,0,ybins);
-  PC_vs_Chan1 = new TH2I("PC_vs_Chan1","",xbins,0,xbins,ybins,0,ybins);
-  PC_vs_Chan2 = new TH2I("PC_vs_Chan2","",xbins,0,xbins,ybins,0,ybins);
+  ADC_vs_Chan = new TH2I("ADC_vs_Chan","",xbins,0,xbins,ybins,0,ybins);
   TDC_vs_Chan = new TH2I("TDC_vs_Chan","",xbins,0,xbins,ybins,0,ybins);
 
   //List of root objects.
   RootObjects = new TObjArray();
   RootObjects->Add(DataTree);
-  RootObjects->Add(HitPattern_MB1);
-  RootObjects->Add(HitPattern_MB2);
-  RootObjects->Add(ChanEn_MB1);
-  RootObjects->Add(ChanEn_MB2);
-  RootObjects->Add(ChanT_MB1);
-  RootObjects->Add(ChanT_MB2);
-
-  RootObjects->Add(CsI_vs_Chan_CAEN);
-  RootObjects->Add(CsI_vs_Chan_MESY1);
-  //RootObjects->Add(CsI_vs_Chan_MESY2);
-  RootObjects->Add(PC_vs_Chan1);
-  RootObjects->Add(PC_vs_Chan2);
+  RootObjects->Add(ADC_vs_Chan);
   RootObjects->Add(TDC_vs_Chan); 
 
   string data_dir = "";
@@ -365,91 +307,13 @@ void ReadPhysicsBuffer() {
   TotEvents += Nevents;
 
   for (unsigned int ievent=0;ievent<Nevents;ievent++) {
-    Si.ResetASICHit();
     ADC.ResetCAENHit();
     TDC.ResetCAENHit();
-    mADC.ResetMesyHit();
-
+    
     //create pointer inside of each  event
     unsigned short * fpoint = epoint;		    
     words = *fpoint++;  
 
-    // First XLM readout 
-    marka->Unpack(fpoint);
-    int XLMdata1 = (int) marka->fChValue[0];
-    chinp1->Reset();
-
-    if (XLMdata1==0xaaaa) {
-      if(!chinp1->Unpack(fpoint))break;
-    
-      unsigned short Nstrips = chinp1->hits.size();    
-
-      for (int istrip=0;istrip<Nstrips;istrip++) {
-	unsigned short id = chinp1->hits[istrip];
-	unsigned short chipNum = (id/2)/16 + 1;
-	unsigned short chanNum = (id/2)%16;
-	unsigned short energy = (int) chinp1->fChValue[id];
-	unsigned short time = (int) chinp1->fChValue[id+1];
-	
-	if(chanNum<16) { 	   
-	  HitPattern_MB1->Fill(chipNum*16-16+chanNum);
-	  ChanEn_MB1->Fill(chipNum*16-16+chanNum,energy);
-	  ChanT_MB1->Fill(chipNum*16-16+chanNum,time);
-        
-          Si.MBID[Si.Nhits]=1;
-          Si.CBID[Si.Nhits]=chipNum;
-          Si.ChNum[Si.Nhits]=chanNum;
-          Si.Energy[Si.Nhits]=energy;
-          Si.Time[Si.Nhits++]=time;	    
-	}
-      }//end of for (istrip)
-    }//end of if (XLMdata1) 
-
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++	    	     	
-    
-    // Second XLM readout if present   
-    markb->Unpack(fpoint);
-    int XLMdata2 = (int) markb->fChValue[0];
-
-    //Not clear that this is (still?) required...//ddc
-    //Prevents from breaking at the bad event buffers....like (wordCount >4095) ??//NR
-    while (XLMdata2 != 0xbbbb) {
-      XLMdata2 = *fpoint++;
-      if(fpoint>epoint+words) break;
-    }
-
-    chinp2->Reset();
-
-    if (XLMdata2==0xbbbb) {
-      if(!chinp2->Unpack(fpoint)) break;
-
-      unsigned short Nstrips = chinp2->hits.size();		 
-
-      for (int istrip=0;istrip<Nstrips;istrip++) {
-	  unsigned short id = chinp2->hits[istrip];
-	  unsigned short chipNum = (id/2)/16 + 1;
-	  unsigned short chanNum = (id/2)%16;
-	  unsigned short energy = (int) chinp2->fChValue[id];
-	  unsigned short time = (int) chinp2->fChValue[id+1];
-
-	  if(chanNum<16) { 	    
-	    HitPattern_MB2->Fill(chipNum*16-16+chanNum);
-	    ChanEn_MB2->Fill(chipNum*16-16+chanNum,energy);
-	    ChanT_MB2->Fill(chipNum*16-16+chanNum,time);
-	    
-	    Si.MBID[Si.Nhits]=2;
-	    Si.CBID[Si.Nhits]=chipNum;
-	    Si.ChNum[Si.Nhits]=chanNum;
-	    Si.Energy[Si.Nhits]=energy;
-	    Si.Time[Si.Nhits++]=time;
-	  }	
-	}// end second for(istrip)
-    }//end if(XLMdata2)
-	    
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    //--- CAEN readout section -------------------------------------------
-    //cout << "CAEN" << endl;
- 
     markc->Unpack(fpoint);
     int CAEN = (int) markc->fChValue[0];
 		
@@ -459,57 +323,27 @@ void ReadPhysicsBuffer() {
     }
 	
     caen_adc1->Reset();
-    caen_adc2->Reset();
-    caen_adc3->Reset();
-    mesy_adc1->Reset();
-    mesy_adc2->Reset();
     caen_tdc1->Reset();
 
     caen_adc1->Unpack(fpoint); if(fpoint>epoint + words + 1) break;
-    caen_adc2->Unpack(fpoint); if(fpoint>epoint + words + 1) break;
-    caen_adc3->Unpack(fpoint); if(fpoint>epoint + words + 1) break;
-    mesy_adc1->Unpack(fpoint); if(fpoint>epoint + words + 1) break;
-    mesy_adc2->Unpack(fpoint); if(fpoint>epoint + words + 1) break;
     caen_tdc1->Unpack(fpoint); if(fpoint>epoint + words + 1) break;    
 
     epoint += words+1; // This skips the rest of the event
     ///////////////////////////////////////////////////////////////////////////////////  
     //---------------------------------------------------
     for(int i=0;i<32;i++) {
-      ADC.ID[ADC.Nhits] = 2;
+      ADC.ID[ADC.Nhits] = 1;
       ADC.ChNum[ADC.Nhits] =i;
       ADC.Data[ADC.Nhits++] = (Int_t) caen_adc1->fChValue[i];
-      PC_vs_Chan1->Fill(i,caen_adc1->fChValue[i]);
+      ADC_vs_Chan->Fill(i,caen_adc1->fChValue[i]);
     }    
 
-    for(int i=0;i<32;i++) {//must loop over second-half of ADC to read in IC
-      ADC.ID[ADC.Nhits] = 3;
-      ADC.ChNum[ADC.Nhits] =i;
-      ADC.Data[ADC.Nhits++] = (Int_t) caen_adc2->fChValue[i];   
-      PC_vs_Chan2->Fill(i,caen_adc2->fChValue[i]);
-    }
-    //---------------------------------------------------
-    for(int i=0;i<32;i++) {  
-      mADC.ID[mADC.Nhits] = 1;
-      mADC.ChNum[mADC.Nhits] =i;
-      mADC.Data[mADC.Nhits++] = (Int_t) mesy_adc1->fChValue[i];
-      CsI_vs_Chan_MESY1->Fill(i,mesy_adc1->fChValue[i]);     
-    }  
-
-    for(int i=0;i<32;i++) {
-      mADC.ID[mADC.Nhits] = 2;
-      mADC.ChNum[mADC.Nhits] =i;
-      mADC.Data[mADC.Nhits++] = (Int_t) caen_adc3->fChValue[i];  
-      CsI_vs_Chan_CAEN->Fill(i,caen_adc3->fChValue[i]);
-    }   
     //---------------------------------------------------
     for(int i=0;i<8;i++) {
-      if( i==0 || i ==7) {
-	TDC.ID[TDC.Nhits] = 12;
-	TDC.ChNum[TDC.Nhits] =i;
-	TDC.Data[TDC.Nhits++] = (Int_t) caen_tdc1->fChValue[i];   
-	TDC_vs_Chan->Fill(i,caen_tdc1->fChValue[i]);
-      }	
+      TDC.ID[TDC.Nhits] = 1;
+      TDC.ChNum[TDC.Nhits] =i;
+      TDC.Data[TDC.Nhits++] = (Int_t) caen_tdc1->fChValue[i];   
+      TDC_vs_Chan->Fill(i,caen_tdc1->fChValue[i]);
     }	    
  
     EventCounter++;
