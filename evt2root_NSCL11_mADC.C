@@ -20,28 +20,16 @@
 #include <TFile.h>
 #include <TTree.h>
 #include <TROOT.h>
-#include <TNtuple.h>
 #include <TH1I.h>
 #include <TH2I.h>
-#include <TH2F.h>
-#include <TCanvas.h>
-#include <TRint.h>
 #include <TObjArray.h>
-#include <TH1.h>
-#include <TCutG.h>
-#include <TDirectory.h>
-#include <TBrowser.h>
-#include <TThread.h>
-#include <TStyle.h>
-#include <TGFrame.h>
-#include <TGlobal.h> 
 
 //Detectors' libraries
 #include "2016_detclass.h"
-#include "configfile.h"
-#include "SimpleInPipe.h"
+//#include "configfile.h"
+//#include "SimpleInPipe.h"
 #include "VM_Module.hpp"
-#include "VM_BaseClass.hpp"
+//#include "VM_BaseClass.hpp"
 
 using namespace std;
 //////////////////////////////////////////////////////////////////////////////////////
@@ -82,22 +70,6 @@ TH2I* TDC_vs_Chan;
 //- Detectors' classes --------------------------------------------------------  
 CAENHit ADC;
 CAENHit TDC;
-
-/***************************************************************
- * a little construct to have an array initialized with zeroes *
- ***************************************************************/
-template<class T,int n>
-
-class ZeroedArray {
-  T histo[n];
-public:
-  ZeroedArray() {
-    for(int i = 0; i < n; i++)
-      histo[i] = 0;
-  }
-  T& operator[](int idx)
-  { return histo[idx]; }
-};
 
 ////////////////////////////////////////////////////////
 //- Main function -------------------------------------------------------------  
