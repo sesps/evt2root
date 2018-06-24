@@ -70,6 +70,11 @@ TH2I* TDC_vs_Chan;
 //- Detectors' classes --------------------------------------------------------  
 CAENHit ADC;
 CAENHit TDC;
+Int_t TAC;
+Int_t FP1;
+Int_t FP2;
+Int_t Scint1;
+Int_t Scint2;
 
 ////////////////////////////////////////////////////////
 //- Main function -------------------------------------------------------------  
@@ -120,6 +125,12 @@ int evt2root_NSCL11_mADC() {
   DataTree->Branch("TDC.ID",TDC.ID,"ID[TDCNhits]/I");
   DataTree->Branch("TDC.ChNum",TDC.ChNum,"ChNum[TDCNhits]/I");
   DataTree->Branch("TDC.Data",TDC.Data,"Data[TDCNhits]/I");
+
+  DataTree->Branch("TAC",&TAC,"TAC/I");
+  DataTree->Branch("FP1",&FP1,"FP1/I");
+  DataTree->Branch("FP2",&FP2,"FP2/I");
+  DataTree->Branch("Scint1",&Scint1,"Scint1/I");
+  DataTree->Branch("Scint2",&Scint2,"Scint2/I");
   
   // Histograms
   Int_t xbins=288;
@@ -298,6 +309,23 @@ void ReadPhysicsBuffer() {
       ADC.ChNum[ADC.Nhits] =i;
       ADC.Data[ADC.Nhits++] = (Int_t) caen_adc1->fChValue[i];
       ADC_vs_Chan->Fill(i,caen_adc1->fChValue[i]);
+      switch(i) {
+      case 0 :
+	TAC=(Int_t) caen_adc1->fChValue[i];
+	break;
+      case 1 :
+	FP1=(Int_t) caen_adc1->fChValue[i];
+	break;
+      case 2 :
+	FP2=(Int_t) caen_adc1->fChValue[i];
+	break;
+      case 3 :
+	Scint1=(Int_t) caen_adc1->fChValue[i];
+	break;
+      case 4 :
+	Scint2=(Int_t) caen_adc1->fChValue[i];
+	break;
+      }
     }    
 
     //---------------------------------------------------
