@@ -76,6 +76,7 @@ Int_t FP1;
 Int_t FP2;
 Int_t Scint1;
 Int_t Scint2;
+Int_t Mon;
 
 ////////////////////////////////////////////////////////
 //- Main function -------------------------------------------------------------  
@@ -310,7 +311,7 @@ void ReadPhysicsBuffer() {
       ADC.ChNum[ADC.Nhits] =i;
       ADC.Data[ADC.Nhits++] = (Int_t) caen_adc1->fChValue[i];
       ADC_vs_Chan->Fill(i,caen_adc1->fChValue[i]);
-      if(run>50 && run <70) {
+      if(run>50 && run <74) {
 	if(EventCounter==0 && ievent==0 && i==0)
 	  cout << "   Sorting data into TAC (1), Delay (2), Scint (2)" << endl;
       switch(i) {
@@ -330,6 +331,30 @@ void ReadPhysicsBuffer() {
 	Scint2=(Int_t) caen_adc1->fChValue[i];
 	break;
       }
+      }
+      if(run > 73) {
+	if(EventCounter==0 && ievent==0 && i==0)
+	  cout << "   Sorting data into TAC (1), Delay (2), Scint (2), Mon (1)" << endl;
+	switch(i) {
+	case 0 :
+	  TAC=(Int_t) caen_adc1->fChValue[i];
+	  break;
+	case 1 :
+	  FP1=(Int_t) caen_adc1->fChValue[i];
+	  break;
+	case 2 :
+	  FP2=(Int_t) caen_adc1->fChValue[i];
+	  break;
+	case 3 :
+	  Scint1=(Int_t) caen_adc1->fChValue[i];
+	  break;
+	case 4 :
+	  Scint2=(Int_t) caen_adc1->fChValue[i];
+	  break;
+	case 5 :
+	  Mon=(Int_t) caen_adc1->fChValue[i];
+	  break;
+	}
       }
     }    
 
