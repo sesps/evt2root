@@ -35,8 +35,8 @@ int main() {
       
   for(int j=0;j<i;j++) {
       std::ofstream outfile("evt_files.lst"); //name of file referenced in evt2root_NSCL11.C
-      string str0 = "/data0/lighthall/data/sps/"; //location of .evt files
-      outfile << "Output ROOT file: /data0/lighthall/root/sps/run" << list[j] << ".root" << endl;
+      string str0 = "/home/splitpole/evt2root/data/"; //location of .evt files
+      outfile << "Output ROOT file: /home/splitpole/evt2root/root/" << list[j] << ".root" << endl;
       outfile << "Data directory: "<< str0 << endl;
       outfile << list[j] << endl;
       system("root -l -q rootinput.C"); //name of file with ROOT command
