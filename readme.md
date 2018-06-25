@@ -7,38 +7,29 @@ Only one ROOT file is generated. The second line is the directory where all the 
 The list of run numbers is the remainder of the file. 
 This script also needs a library where the detectors classes are defined.
 
-## Versions
-Two version of this code exist, depending on the electonics setup.
-### `evt2root_NSCL11.C`
-Version used by Texas A&M University. 
-Adopted & tested for the NSCLDAQ11 version.
-Note: This version of the converter is only useful for the codes that has been used by the LSU group; the names of the branches and  leaves and the objects of detector classes are different for the codes that has been used by FSU group.
-The current version of the code does not work for SPS data.
-
-### `evt2root_NSCL11_mADC.C`
+## Version - `evt2root_NSCL11_mADC.C`
 Version used by Florida State University, generalized to include unpacking of Mesytec ADC modules.
 It takes all types of modules in the same way and unpacks it.
 This is the current version for use with SPS data.
 
 ## Requirements
 The following files are required for evt2root to run.
+* `2016_detclass.h`
 * `VM_BaseClass.cpp`
 * `VM_Module.cpp`
-* `SimpleInPipe.cpp`
 * `evt_files.lst`
 
 ## Execution
-To run evt2root, the following macros are loaded.
+To run evt2root, enter the following commands.
 ```
 root -l
-.x VM_BaseClass.cpp+
+.L VM_BaseClass.cpp+
 .L VM_Module.cpp+
-.L SimpleInPipe.cpp+
 .x evt2root_NSCL11.C+
 ```
-This list of commands is contained within the file `rootinput.txt` and can be executed as follows.
+This list of commands is executed by the file `rootinput.C` and can be executed as follows.
 ```
-root -l < rootinput.txt
+root -l -q rootinput.C
 ```
 ### Manual mode
 Concatonate several `.evt` files into one `.root` file. To run, edit the file `evt_files.lst` and pass `rootinput.txt` to ROOT. The file `evt_files.lst` should be of the form
@@ -72,7 +63,7 @@ The run-to-run changes in `runs.lst` and `evt_file.lst` are excuded by `.gitigno
 #### Requires:
 * `data.cpp`
 * `runs.lst`
-* `rootinput.txt`
+* `rootinput.C`
  
 #### Output:
 * `evt_files.lst`
