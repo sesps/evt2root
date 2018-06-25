@@ -46,6 +46,7 @@ const string files_list = "evt_files.lst";
 TFile* fileR;
 TTree* DataTree;
 TObjArray* RootObjects;
+Int_t run;
 
 // Set VME module names and positions
 CAEN_ADC* caen_adc1 = new CAEN_ADC("First ADC", 2);
@@ -164,6 +165,7 @@ int evt2root_NSCL11_mADC() {
   int run_number;
   int nseg;
   ListEVT >> run_number;
+  run=run_number;
 
   //Loop over files in the data file list.
   while(!ListEVT.eof()) {
@@ -210,7 +212,7 @@ int evt2root_NSCL11_mADC() {
 
 	//--ddc daq11, the data starts right after the body subheader, which should be zero.
 	if( *(unsigned int*)(buffer+8) > 0 ) {
-	  cout << "unexpected subheader..." << endl;
+	  cout << "   unexpected subheader... " << (unsigned int*)(buffer+8) << endl;
 	}
 
       if (!evtfile) {
@@ -240,7 +242,9 @@ int evt2root_NSCL11_mADC() {
 
       case 11: 
 	runNum = *(epoint+8);
-	cout << "   run number="<< runNum << endl;
+	cout << "   Run number = "<< runNum << endl;
+	if(runNum!=run)
+	  cout << "   Expected run number = " << run << endl;
 	break;
 	
       case 12:
@@ -309,6 +313,9 @@ void ReadPhysicsBuffer() {
       ADC.ChNum[ADC.Nhits] =i;
       ADC.Data[ADC.Nhits++] = (Int_t) caen_adc1->fChValue[i];
       ADC_vs_Chan->Fill(i,caen_adc1->fChValue[i]);
+      if(run>50 && run <70) {
+	if(EventCounter==0 && ievent==0 && i==0)
+	  cout << "   Sorting data into TAC (1), Delay (2), Scint (2)" << endl;
       switch(i) {
       case 0 :
 	TAC=(Int_t) caen_adc1->fChValue[i];
@@ -325,6 +332,7 @@ void ReadPhysicsBuffer() {
       case 4 :
 	Scint2=(Int_t) caen_adc1->fChValue[i];
 	break;
+      }
       }
     }    
 
