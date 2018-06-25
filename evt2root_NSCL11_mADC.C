@@ -158,8 +158,7 @@ int evt2root_NSCL11_mADC() {
   }
 
   ifstream evtfile;
-  bool fileProblem = 0;
-  bool endOfRun = 0;
+  
   cout << "Loop over evt files " <<endl; //debug
  
   int run_number;
@@ -172,8 +171,6 @@ int evt2root_NSCL11_mADC() {
 
     if (evtfile.is_open()) cout << "  * Problem previous file not closed!" << endl;
 
-    endOfRun=0;
-    fileProblem = 0;   
     nseg=0;
     for(int seg_number=0;seg_number<3;seg_number++) {
       string name = data_dir + Form("run-%.4d-%.2d.evt",run_number,seg_number);
