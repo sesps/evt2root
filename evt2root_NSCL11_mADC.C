@@ -72,6 +72,10 @@ TH2I* TDC_vs_Chan;
 CAENHit ADC;
 CAENHit TDC;
 Int_t TAC;
+Int_t TAC1;
+Int_t TAC2;
+Int_t TAC3;
+Int_t TAC4;
 Int_t Cath;
 Int_t FP1;
 Int_t FP2;
@@ -130,6 +134,10 @@ int evt2root_NSCL11_mADC() {
   DataTree->Branch("TDC.Data",TDC.Data,"Data[TDCNhits]/I");
 
   DataTree->Branch("TAC",&TAC,"TAC/I");
+  DataTree->Branch("TAC1",&TAC1,"TAC1/I");
+  DataTree->Branch("TAC2",&TAC2,"TAC2/I");
+  DataTree->Branch("TAC3",&TAC3,"TAC3/I");
+  DataTree->Branch("TAC4",&TAC4,"TAC4/I");
   DataTree->Branch("Cath",&Cath,"Cath/I");
   DataTree->Branch("FP1",&FP1,"FP1/I");
   DataTree->Branch("FP2",&FP2,"FP2/I");
@@ -138,8 +146,8 @@ int evt2root_NSCL11_mADC() {
   DataTree->Branch("Mon",&Mon,"Mon/I");
   
   // Histograms
-  Int_t xbins=288;
-  Int_t ybins=4096;
+  Int_t xbins=4096;
+  Int_t ybins=32;
   ADC_vs_Chan = new TH2I("ADC_vs_Chan","",xbins,0,xbins,ybins,0,ybins);
   TDC_vs_Chan = new TH2I("TDC_vs_Chan","",xbins,0,xbins,ybins,0,ybins);
 
@@ -169,6 +177,15 @@ int evt2root_NSCL11_mADC() {
   int nseg;
   ListEVT >> run_number;
   run=run_number;
+
+   if(run > 138) {
+     // Set VME module names and positions
+     caen_tdc1 = new CAEN_TDC("First TDC", 3);
+
+     // DataTree->SetBranchStatus("TDC*",0);
+     // DataTree->SetBranchStatus("TAC",0);
+     // DataTree->SetBranchStatus("Mon",0);
+   }
 
   //Loop over files in the data file list.
   while(!ListEVT.eof()) {
@@ -313,7 +330,7 @@ void ReadPhysicsBuffer() {
       ADC.ID[ADC.Nhits] = 1;
       ADC.ChNum[ADC.Nhits] =i;
       ADC.Data[ADC.Nhits++] = (Int_t) caen_adc1->fChValue[i];
-      ADC_vs_Chan->Fill(i,caen_adc1->fChValue[i]);
+      ADC_vs_Chan->Fill(caen_adc1->fChValue[i],i);
       if(run<45) {
 	if(EventCounter==0 && ievent==0 && i==0)
 	  cout << "   Sorting data into TAC (1), Cath (1)" << endl;
@@ -331,7 +348,8 @@ void ReadPhysicsBuffer() {
 	  cout << "   Sorting data into TAC (1), Delay (2), Scint (2)" << endl;
 	switch(i) {
 	case 0 :
-	  TAC=(Int_t) caen_adc1->fChValue[i];
+	  if((Int_t) caen_adc1->fChValue[i]>100)
+	    TAC=(Int_t) caen_adc1->fChValue[i];
 	  break;
 	case 1 :
 	  FP1=(Int_t) caen_adc1->fChValue[i];
@@ -347,7 +365,7 @@ void ReadPhysicsBuffer() {
 	  break;
 	}
       }
-      if(run > 73) {//June 25, 2018
+      if(run > 73 && run < 138) {//June 25, 2018
 	if(EventCounter==0 && ievent==0 && i==0)
 	  cout << "   Sorting data into TAC (1), Delay (2), Scint (2), Mon (1)" << endl;
 	switch(i) {
@@ -371,6 +389,40 @@ void ReadPhysicsBuffer() {
 	  break;
 	}
       }
+
+      if(run > 138) {//July 20, 2018
+	if(EventCounter==0 && ievent==0 && i==0)
+	  cout << "   Sorting data into TAC (4), Andode (2), Scint (2), Cath (1)" << endl;
+	switch(i) {
+	case 0 :
+	  TAC1=(Int_t) caen_adc1->fChValue[i];
+	  break;
+	case 1 :
+	  TAC2=(Int_t) caen_adc1->fChValue[i];
+	  break;
+	case 2 :
+	  TAC3=(Int_t) caen_adc1->fChValue[i];
+	  break;
+	case 3 :
+	  TAC4=(Int_t) caen_adc1->fChValue[i];
+	  break;
+	case 4 :
+	  FP1=(Int_t) caen_adc1->fChValue[i];
+	  break;
+	case 5 :
+	  FP2=(Int_t) caen_adc1->fChValue[i];
+	  break;
+	case 6 :
+	  Scint1=(Int_t) caen_adc1->fChValue[i];
+	  break;
+	case 7 :
+	  Scint2=(Int_t) caen_adc1->fChValue[i];
+	  break;
+	case 8 :
+	  Cath=(Int_t) caen_adc1->fChValue[i];
+	  break;
+	}
+      }
     }    
 
     //---------------------------------------------------
@@ -378,7 +430,7 @@ void ReadPhysicsBuffer() {
       TDC.ID[TDC.Nhits] = 1;
       TDC.ChNum[TDC.Nhits] =i;
       TDC.Data[TDC.Nhits++] = (Int_t) caen_tdc1->fChValue[i];   
-      TDC_vs_Chan->Fill(i,caen_tdc1->fChValue[i]);
+      TDC_vs_Chan->Fill(caen_tdc1->fChValue[i],i);
     }	    
  
     EventCounter++;
