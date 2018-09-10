@@ -395,16 +395,20 @@ void ReadPhysicsBuffer() {
 	  cout << "   Sorting data into TAC (4), Andode (2), Scint (2), Cath (1)" << endl;
 	switch(i) {
 	case 0 :
-	  TAC1=(Int_t) caen_adc1->fChValue[i];
+	  if((Int_t) caen_adc1->fChValue[i]>100)
+	    TAC1=(Int_t) caen_adc1->fChValue[i];
 	  break;
 	case 1 :
-	  TAC2=(Int_t) caen_adc1->fChValue[i];
+	  if((Int_t) caen_adc1->fChValue[i]>100)
+	    TAC2=(Int_t) caen_adc1->fChValue[i];
 	  break;
 	case 2 :
-	  TAC3=(Int_t) caen_adc1->fChValue[i];
+	  if((Int_t) caen_adc1->fChValue[i]>100)
+	    TAC3=(Int_t) caen_adc1->fChValue[i];
 	  break;
 	case 3 :
-	  TAC4=(Int_t) caen_adc1->fChValue[i];
+	  if((Int_t) caen_adc1->fChValue[i]>100)
+	    TAC4=(Int_t) caen_adc1->fChValue[i];
 	  break;
 	case 4 :
 	  FP1=(Int_t) caen_adc1->fChValue[i];
