@@ -57,9 +57,6 @@ CAEN_TDC* caen_tdc1 = new CAEN_TDC("First TDC", 5);
 MESY_ADC* mesy_tdc2 = new MESY_ADC("Second TDC", 9);
 ///////using channels 1-4; 1&2 are two ends of fp1, 3&4 are fp2
 
-float CalParamF[128][3];
-float CalParamB[128][3];
-
 int unsigned Nevents;
 int unsigned TotEvents=0;
 int unsigned words;  
