@@ -203,8 +203,8 @@ Bool_t MESY_QDC::Unpack(unsigned short *& gpointer){
 
   testresolution = (*zpointer & 0x7000) >>12;
   shortwords = 2 * ( *zpointer++ & 0x0fff ); 
-  //if (testresolution !=8192 ) {
-  if (testresolution !=1 ) {
+
+  if (testresolution !=1 && testresolution != 6) {//mTDC2 is resolution 6
     std::cout<<" resolution value unexpected:" <<testresolution<<std::endl ;
   }
   ModuleID = *zpointer++ & 0x00ff;

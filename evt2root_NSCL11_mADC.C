@@ -4,8 +4,8 @@
 // Adopted & tested for the NSCLDAQ11 version.
 //
 // Nabin, ddc, DSG, KTM et.al. // December 2015.
-//
-// Inputs & Comments are Welcome!           --Nabin
+// kgh -- Sept. 2018
+// 
 /////////////////////////////////////////////////////////////////////////////////////
 //C and C++ libraries
 #include <iostream>
@@ -49,8 +49,13 @@ TObjArray* RootObjects;
 Int_t run;
 
 // Set VME module names and positions
+//***must include ALL modules read in by TCL
 CAEN_ADC* caen_adc1 = new CAEN_ADC("First ADC", 2);
+CAEN_ADC* caen_adc2 = new CAEN_ADC("Second ADC", 3);
+CAEN_ADC* caen_adc3 = new CAEN_ADC("Third ADC", 6);
 CAEN_TDC* caen_tdc1 = new CAEN_TDC("First TDC", 5);
+MESY_ADC* mesy_tdc2 = new MESY_ADC("Second TDC", 9);
+///////using channels 1-4; 1&2 are two ends of fp1, 3&4 are fp2
 
 float CalParamF[128][3];
 float CalParamB[128][3];
@@ -71,6 +76,7 @@ TH2I* TDC_vs_Chan;
 //- Detectors' classes --------------------------------------------------------  
 CAENHit ADC;
 CAENHit TDC;
+MesyHit mTDC;
 Int_t TAC;
 Int_t TAC1;
 Int_t TAC2;
@@ -82,6 +88,10 @@ Int_t FP2;
 Int_t Scint1;
 Int_t Scint2;
 Int_t Mon;
+
+//for mTDC, one element per end:
+Int_t mFP1[2],
+      mFP2[2];
 
 ////////////////////////////////////////////////////////
 //- Main function -------------------------------------------------------------  
@@ -133,6 +143,11 @@ int evt2root_NSCL11_mADC() {
   DataTree->Branch("TDC.ChNum",TDC.ChNum,"ChNum[TDCNhits]/I");
   DataTree->Branch("TDC.Data",TDC.Data,"Data[TDCNhits]/I");
 
+  DataTree->Branch("mTDC.Nhits",&mTDC.Nhits,"mTDCNhits/I");
+  DataTree->Branch("mTDC.ID",mTDC.ID,"ID[mTDCNhits]/I");
+  DataTree->Branch("mTDC.ChNum",mTDC.ChNum,"ChNum[mTDCNhits]/I");
+  DataTree->Branch("mTDC.Data",mTDC.Data,"Data[mTDCNhits]/I");
+
   DataTree->Branch("TAC",&TAC,"TAC/I");
   DataTree->Branch("TAC1",&TAC1,"TAC1/I");
   DataTree->Branch("TAC2",&TAC2,"TAC2/I");
@@ -144,6 +159,9 @@ int evt2root_NSCL11_mADC() {
   DataTree->Branch("Scint1",&Scint1,"Scint1/I");
   DataTree->Branch("Scint2",&Scint2,"Scint2/I");
   DataTree->Branch("Mon",&Mon,"Mon/I");
+
+  DataTree->Branch("mFP1",mFP1,"mFP1[2]/I");
+  DataTree->Branch("mFP2",mFP2,"mFP2[2]/I");
   
   // Histograms
   Int_t xbins=4096;
@@ -178,6 +196,7 @@ int evt2root_NSCL11_mADC() {
   ListEVT >> run_number;
   run=run_number;
 
+  /* why does this exist???
    if(run > 138) {
      // Set VME module names and positions
      caen_tdc1 = new CAEN_TDC("First TDC", 3);
@@ -185,7 +204,7 @@ int evt2root_NSCL11_mADC() {
      // DataTree->SetBranchStatus("TDC*",0);
      // DataTree->SetBranchStatus("TAC",0);
      // DataTree->SetBranchStatus("Mon",0);
-   }
+   }*/
 
   //Loop over files in the data file list.
   while(!ListEVT.eof()) {
@@ -196,91 +215,91 @@ int evt2root_NSCL11_mADC() {
     for(int seg_number=0;seg_number<3;seg_number++) {
       string name = data_dir + Form("run-%.4d-%.2d.evt",run_number,seg_number);
 
-    //open evt file
-    evtfile.clear();
-    evtfile.open(name.c_str(),ios::binary);      
+      //open evt file
+      evtfile.clear();
+      evtfile.open(name.c_str(),ios::binary);      
     
-    if(seg_number==0) {//should be true for all files in list
-      cout << "  Data file: " << name << endl;
-    
-      if (evtfile.bad()) cout << "   ** Bad evt file." << endl;
-      if (evtfile.fail()) cout << "   ** Fail evt file" << endl;
-      
-      if (!evtfile) {
-	cout << "   Could not open evt file" << endl;
-	//return 1;
-      }
-      else {
-      cout << "   Converting data ..." << endl;
-      nseg++;
-      }
-    }
-    else {//should only be true for multi-segment files; limit output in case of single-segment
-      if(evtfile.good()) {
+      if(seg_number==0) {//should be true for all files in list
 	cout << "  Data file: " << name << endl;
-	cout << "   Converting data ..." << endl;
-	nseg++;
+    
+	if (evtfile.bad()) cout << "   ** Bad evt file." << endl;
+	if (evtfile.fail()) cout << "   ** Fail evt file" << endl;
+      
+	if (!evtfile) {
+	  cout << "   Could not open evt file" << endl;
+	  //return 1;
+	}
+	else {
+	  cout << "   Converting data ..." << endl;
+	  nseg++;
+	}
       }
-    }
+      else {//should only be true for multi-segment files; limit output in case of single-segment
+	if(evtfile.good()) {
+	  cout << "  Data file: " << name << endl;
+	  cout << "   Converting data ..." << endl;
+	  nseg++;
+	}
+      }
 
-    ////-----------------------------------------------------------------------------
-    for (;;) {     
-      evtfile.read(buffer,8);
-      evtfile.read(buffer+8,*(unsigned int*)buffer-8);
-
+      ////-----------------------------------------------------------------------------
+      for (;;) {     
+	evtfile.read(buffer,8);
+	evtfile.read(buffer+8,*(unsigned int*)buffer-8);
+	
 	//--ddc daq11, the data starts right after the body subheader, which should be zero.
 	if( *(unsigned int*)(buffer+8) > 0 ) {
 	  cout << "   unexpected subheader... " << (unsigned int*)(buffer+8) << endl;
 	}
 
-      if (!evtfile) {
-	//this could be a bad file or the file is subdivided into parts
-	break;
-      }      
-     
-      point = ((unsigned short*)buffer) + 6;
-      
-      Nbuffers++;     
-      epoint = point; 
-      Nevents = 1;      
-      string TitleStr;
-
-      BufferType = *(unsigned int*)(buffer+4);
-      switch(BufferType) {
-      case 0x1E : type=1;
-	break;
-      case 0x01 : type=11;
-	break;
-      case 0x02 : type=12;
-	break;
-      default: type=0;
-      }
-      
-      switch(type) {
-
-      case 11: 
-	runNum = *(epoint+8);
-	cout << "   Run number = "<< runNum << endl;
-	if(runNum!=run)
-	  cout << "   Expected run number = " << run << endl;
-	break;
+	if (!evtfile) {
+	  //this could be a bad file or the file is subdivided into parts
+	  break;
+	}      
 	
-      case 12:
-	break;
-	
-      case 2:
-	break;
+	point = ((unsigned short*)buffer) + 6;
+      
+	Nbuffers++;     
+	epoint = point; 
+	Nevents = 1;      
+	string TitleStr;
 
-      case 1:
-	BufferPhysics++;
-	ReadPhysicsBuffer();	
-	break; //end of physics buffer		
-      }//end switch(type)  
-    } //end for(;;) over evtfile
-    ////---------------------------------------------------------------------------------
+	BufferType = *(unsigned int*)(buffer+4);
+	switch(BufferType) {
+	case 0x1E : type=1;
+	  break;
+	case 0x01 : type=11;
+	  break;
+	case 0x02 : type=12;
+	  break;
+	default: type=0;
+	}
+      
+	switch(type) {
+
+	case 11: 
+	  runNum = *(epoint+8);
+	  cout << "   Run number = "<< runNum << endl;
+	  if(runNum!=run)
+	    cout << "   Expected run number = " << run << endl;
+	  break;
+	  
+	case 12:
+	  break;
+	
+	case 2:
+	  break;
+
+	case 1:
+	  BufferPhysics++;
+	  ReadPhysicsBuffer();	
+	  break; //end of physics buffer		
+	}//end switch(type)  
+      } //end for(;;) over evtfile
+      ////---------------------------------------------------------------------------------
     
-    evtfile.close();
-    evtfile.clear(); // clear event status in case we had a bad file
+      evtfile.close();
+      evtfile.clear(); // clear event status in case we had a bad file
     }//end of segment loop
     if(nseg>1)
       printf("   %d segments found\n",nseg);
@@ -312,16 +331,23 @@ void ReadPhysicsBuffer() {
   for (unsigned int ievent=0;ievent<Nevents;ievent++) {
     ADC.ResetCAENHit();
     TDC.ResetCAENHit();
+    mTDC.ResetMesyHit();
     
     //create pointer inside of each  event
     unsigned short * fpoint = epoint;		    
     words = *fpoint++;  
 
     caen_adc1->Reset();
+    caen_adc2->Reset();
+    caen_adc3->Reset();
     caen_tdc1->Reset();
+    mesy_tdc2->Reset();
 
     caen_adc1->Unpack(fpoint); if(fpoint>epoint + words + 1) break;
-    caen_tdc1->Unpack(fpoint); if(fpoint>epoint + words + 1) break;    
+    caen_adc2->Unpack(fpoint); if(fpoint>epoint + words + 1) break;
+    caen_adc3->Unpack(fpoint); if(fpoint>epoint + words + 1) break;
+    caen_tdc1->Unpack(fpoint); if(fpoint>epoint + words + 1) break;
+    mesy_tdc2->Unpack(fpoint); if(fpoint>epoint + words + 1) break;
 
     epoint += words+1; // This skips the rest of the event
     ///////////////////////////////////////////////////////////////////////////////////  
@@ -365,7 +391,7 @@ void ReadPhysicsBuffer() {
 	  break;
 	}
       }
-      if(run > 73 && run < 138) {//June 25, 2018
+      else if(run > 73 && run < 138) {//June 25, 2018
 	if(EventCounter==0 && ievent==0 && i==0)
 	  cout << "   Sorting data into TAC (1), Delay (2), Scint (2), Mon (1)" << endl;
 	switch(i) {
@@ -390,7 +416,7 @@ void ReadPhysicsBuffer() {
 	}
       }
 
-      if(run > 138) {//July 20, 2018
+      else if(run > 138) {//July 20, 2018
 	if(EventCounter==0 && ievent==0 && i==0)
 	  cout << "   Sorting data into TAC (4), Andode (2), Scint (2), Cath (1)" << endl;
 	switch(i) {
@@ -436,6 +462,17 @@ void ReadPhysicsBuffer() {
       TDC.Data[TDC.Nhits++] = (Int_t) caen_tdc1->fChValue[i];   
       TDC_vs_Chan->Fill(caen_tdc1->fChValue[i],i);
     }	    
+
+    for (int i=1; i<=4; i++) {
+      mTDC.ID[mTDC.Nhits] = 1; //arbitrary value? --kgh
+      mTDC.ChNum[mTDC.Nhits] = i;
+      mTDC.Data[mTDC.Nhits++] = (Int_t)mesy_tdc2->fChValue[i];
+    }
+    
+    mFP1[0] = (Int_t)mesy_tdc2->fChValue[1];
+    mFP1[1] = (Int_t)mesy_tdc2->fChValue[2];
+    mFP2[0] = (Int_t)mesy_tdc2->fChValue[3];
+    mFP2[1] = (Int_t)mesy_tdc2->fChValue[4];
  
     EventCounter++;
     
