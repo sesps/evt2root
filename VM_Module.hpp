@@ -145,20 +145,32 @@ public:
 };
 
 class MESY_QDC:public VM_Module{
-private:
+protected:
+  UInt_t set_resolution;
 public:
   MESY_QDC(){};
-  MESY_QDC(const TString& name,const UInt_t& geoaddress);
+  MESY_QDC(const TString& name,const UInt_t& geoaddress,const UInt_t resolution);
   virtual Bool_t Unpack(unsigned short*& gpointer);
 
   ClassDef(MESY_QDC,1);
+};
+
+class MESY_TDC:public VM_Module{
+private:
+  UInt_t set_resolution;
+public:
+  MESY_TDC(){};
+  MESY_TDC(const TString& name,const UInt_t& geoaddress,const UInt_t resolution);
+  virtual Bool_t Unpack(unsigned short*& gpointer);
+
+  ClassDef(MESY_TDC,1);
 };
 
 class MESY_ADC:public MESY_QDC{
 private:
 public:
   MESY_ADC(){};
-  MESY_ADC(const TString& name,const UInt_t& geoaddress):MESY_QDC(name,geoaddress){};
+  MESY_ADC(const TString& name,const UInt_t& geoaddress,const UInt_t resolution):MESY_QDC(name,geoaddress,resolution){};
 
   ClassDef(MESY_ADC,1);
 };

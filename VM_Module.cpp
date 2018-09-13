@@ -183,11 +183,63 @@ Bool_t CAEN_ADC::Unpack(unsigned short *& gpointer){
   return flag;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////
-MESY_QDC::MESY_QDC(const TString& name,const UInt_t& geoaddress):VM_Module(name,geoaddress){
+MESY_QDC::MESY_QDC(const TString& name,const UInt_t& geoaddress,const UInt_t i_resolution):VM_Module(name,geoaddress),set_resolution(i_resolution){
   fModuleType = kMESYtype;  //MESY
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////
 Bool_t MESY_QDC::Unpack(unsigned short *& gpointer){
+  short dat, chan;
+  unsigned short ovfl,testresolution;
+  short shortwords;
+  short ModuleID;
+  unsigned short * zpointer; zpointer = gpointer;
+  int flag(1);
+
+  if(*zpointer==0xffff){ //module is suppressed
+    gpointer = gpointer + 2 ;
+    return 1; //this is not bad so just return 1;
+  }
+
+  testresolution = (*zpointer & 0x7000) >>12;
+  shortwords = 2 * ( *zpointer++ & 0x0fff ); 
+
+  if (testresolution != set_resolution) {
+    std::cout<<" resolution value unexpected:" <<testresolution
+	     << " (expected " << set_resolution << ")"<< std::endl;
+  }
+  ModuleID = *zpointer++ & 0x00ff;
+  
+  
+  if(ModuleID != fGeoAddress ){
+    std::cout<<ModuleID<<" different from geoaddress in stack: "<< GeoAddress()<<std::endl;
+    gpointer+=shortwords; //move to expected end of this part of buffer
+
+    flag = 0; //THIS is bad, means stack is probably not set up right or there was an incorrectly formatted buffer(which can happen).  Check to find the cause...probably your module stack is not in the right order
+  }
+  else{
+    while( zpointer < ( gpointer + shortwords)){
+      ovfl = (*zpointer & 0x4000)>>14;
+      dat = *zpointer++ & 0xffff;
+      chan = *zpointer++ & 0x1f;
+
+      if (!ovfl)
+	SortChVal(chan,dat);
+      else
+	dat = 0;
+    }
+  }
+  fCounter = *zpointer++;
+  zpointer = zpointer + 3; //jump over EOB + ffff
+  gpointer = zpointer; //move gpointer to end of this zpointer
+
+  return flag;
+}
+//////////////////////////////////////////////////////////////////
+MESY_TDC::MESY_TDC(const TString& name,const UInt_t& geoaddress,const UInt_t i_resolution):VM_Module(name,geoaddress),set_resolution(i_resolution){
+  fModuleType = kMESYtype;  //MESY
+}
+/////////////////////////////////////////////////////////////////
+Bool_t MESY_TDC::Unpack(unsigned short *& gpointer){
   unsigned short dat, chan;
   unsigned short testresolution;
   short shortwords;
@@ -203,8 +255,9 @@ Bool_t MESY_QDC::Unpack(unsigned short *& gpointer){
   testresolution = (*zpointer & 0x7000) >>12;
   shortwords = 2 * ( *zpointer++ & 0x0fff ); 
 
-  if (testresolution !=1 && testresolution != 6) {//mTDC2 is resolution 6
-    std::cout<<" resolution value unexpected:" <<testresolution<<std::endl ;
+  if (testresolution != set_resolution) {
+    std::cout<<" resolution value unexpected:" <<testresolution
+	     << " (expected " << set_resolution << ")"<< std::endl;
   }
   ModuleID = *zpointer++ & 0x00ff;
   

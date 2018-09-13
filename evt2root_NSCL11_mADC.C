@@ -54,7 +54,7 @@ CAEN_ADC* caen_adc1 = new CAEN_ADC("First ADC", 2);
 CAEN_ADC* caen_adc2 = new CAEN_ADC("Second ADC", 3);
 CAEN_ADC* caen_adc3 = new CAEN_ADC("Third ADC", 6);
 CAEN_TDC* caen_tdc1 = new CAEN_TDC("First TDC", 5);
-MESY_ADC* mesy_tdc2 = new MESY_ADC("Second TDC", 9);
+MESY_TDC* mesy_tdc2 = new MESY_TDC("Second TDC", 9, 6);//name, geoaddress, resolution
 ///////using channels 1-4; 1&2 are two ends of fp1, 3&4 are fp2
 
 int unsigned Nevents;
