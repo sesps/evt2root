@@ -176,7 +176,6 @@ Bool_t CAEN_ADC::Unpack(unsigned short *& gpointer){
       dat =  *gpointer++ & 0xfff;
       chan = *gpointer++ & 0x1f;
       SortChVal(chan,dat);
-      
     }
   }
   fCounter= *gpointer++;
@@ -189,8 +188,8 @@ MESY_QDC::MESY_QDC(const TString& name,const UInt_t& geoaddress):VM_Module(name,
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////
 Bool_t MESY_QDC::Unpack(unsigned short *& gpointer){
-  short dat, chan;
-  unsigned short ovfl,testresolution;
+  unsigned short dat, chan;
+  unsigned short testresolution;
   short shortwords;
   short ModuleID;
   unsigned short * zpointer; zpointer = gpointer;
@@ -218,14 +217,9 @@ Bool_t MESY_QDC::Unpack(unsigned short *& gpointer){
   }
   else{
     while( zpointer < ( gpointer + shortwords)){
-      ovfl = (*zpointer & 0x4000 )>>14 ; 
-      dat = *zpointer++ & 0xfff;
+      dat = *zpointer++ & 0xffff;
       chan = *zpointer++ & 0x1f;
-      
-      if (!ovfl){
-	SortChVal(chan,dat);
-      }
-      else dat = 0;
+      SortChVal(chan,dat);
     }
   }
   fCounter = *zpointer++;

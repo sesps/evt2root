@@ -240,7 +240,7 @@ int evt2root_NSCL11_mADC() {
       }
 
       ////-----------------------------------------------------------------------------
-      for (;;) {     
+      for (;;) {
 	evtfile.read(buffer,8);
 	evtfile.read(buffer+8,*(unsigned int*)buffer-8);
 	
