@@ -54,8 +54,11 @@ CAEN_ADC* caen_adc1 = new CAEN_ADC("First ADC", 2);
 CAEN_ADC* caen_adc2 = new CAEN_ADC("Second ADC", 3);
 CAEN_ADC* caen_adc3 = new CAEN_ADC("Third ADC", 6);
 CAEN_TDC* caen_tdc1 = new CAEN_TDC("First TDC", 5);
-MESY_TDC* mesy_tdc2 = new MESY_TDC("Second TDC", 9, 6);//name, geoaddress, resolution
+MESY_ADC* mesy_tdc2 = new MESY_ADC("Second TDC", 9);
 ///////using channels 1-4; 1&2 are two ends of fp1, 3&4 are fp2
+
+float CalParamF[128][3];
+float CalParamB[128][3];
 
 int unsigned Nevents;
 int unsigned TotEvents=0;
@@ -71,7 +74,9 @@ TH2I* ADC_vs_Chan;
 TH2I* TDC_vs_Chan;
 
 //- Detectors' classes --------------------------------------------------------  
-CAENHit ADC;
+CAENHit ADC1;
+CAENHit ADC2;
+CAENHit ADC3;
 CAENHit TDC;
 MesyHit mTDC;
 Int_t TAC;
@@ -130,10 +135,20 @@ int evt2root_NSCL11_mADC() {
   // Data Tree
   DataTree = new TTree("DataTree","DataTree");
 
-  DataTree->Branch("ADC.Nhits",&ADC.Nhits,"ADCNhits/I");
-  DataTree->Branch("ADC.ID",ADC.ID,"ID[ADCNhits]/I");
-  DataTree->Branch("ADC.ChNum",ADC.ChNum,"ChNum[ADCNhits]/I");
-  DataTree->Branch("ADC.Data",ADC.Data,"Data[ADCNhits]/I");
+  DataTree->Branch("ADC1.Nhits",&ADC1.Nhits,"ADC1Nhits/I");
+  DataTree->Branch("ADC1.ID",ADC1.ID,"ID[ADC1Nhits]/I");
+  DataTree->Branch("ADC1.ChNum",ADC1.ChNum,"ChNum[ADC1Nhits]/I");
+  DataTree->Branch("ADC1.Data",ADC1.Data,"Data[ADC1Nhits]/I");
+
+  DataTree->Branch("ADC2.Nhits",&ADC2.Nhits,"ADC2Nhits/I");
+  DataTree->Branch("ADC2.ID",ADC2.ID,"ID[ADC2Nhits]/I");
+  DataTree->Branch("ADC2.ChNum",ADC2.ChNum,"ChNum[ADC2Nhits]/I");
+  DataTree->Branch("ADC2.Data",ADC2.Data,"Data[ADC2Nhits]/I");
+
+  DataTree->Branch("ADC3.Nhits",&ADC3.Nhits,"ADC3Nhits/I");
+  DataTree->Branch("ADC3.ID",ADC3.ID,"ID[ADC3Nhits]/I");
+  DataTree->Branch("ADC3.ChNum",ADC3.ChNum,"ChNum[ADC3Nhits]/I");
+  DataTree->Branch("ADC3.Data",ADC3.Data,"Data[ADC3Nhits]/I");
 
   DataTree->Branch("TDC.Nhits",&TDC.Nhits,"TDCNhits/I");
   DataTree->Branch("TDC.ID",TDC.ID,"ID[TDCNhits]/I");
@@ -240,7 +255,7 @@ int evt2root_NSCL11_mADC() {
       }
 
       ////-----------------------------------------------------------------------------
-      for (;;) {
+      for (;;) {     
 	evtfile.read(buffer,8);
 	evtfile.read(buffer+8,*(unsigned int*)buffer-8);
 	
@@ -326,7 +341,9 @@ void ReadPhysicsBuffer() {
   TotEvents += Nevents;
 
   for (unsigned int ievent=0;ievent<Nevents;ievent++) {
-    ADC.ResetCAENHit();
+    ADC1.ResetCAENHit();
+    ADC2.ResetCAENHit();
+    ADC3.ResetCAENHit();
     TDC.ResetCAENHit();
     mTDC.ResetMesyHit();
     
@@ -339,20 +356,28 @@ void ReadPhysicsBuffer() {
     caen_adc3->Reset();
     caen_tdc1->Reset();
     mesy_tdc2->Reset();
-
-    caen_adc1->Unpack(fpoint); if(fpoint>epoint + words + 1) break;
-    caen_adc2->Unpack(fpoint); if(fpoint>epoint + words + 1) break;
-    caen_adc3->Unpack(fpoint); if(fpoint>epoint + words + 1) break;
-    caen_tdc1->Unpack(fpoint); if(fpoint>epoint + words + 1) break;
-    mesy_tdc2->Unpack(fpoint); if(fpoint>epoint + words + 1) break;
+    caen_adc1->Unpack(fpoint); if(fpoint>epoint + words + 1)  break;
+    caen_adc2->Unpack(fpoint); if(fpoint>epoint + words + 1)  break;
+    caen_adc3->Unpack(fpoint); if(fpoint>epoint + words + 1)  break;
+    caen_tdc1->Unpack(fpoint); if(fpoint>epoint + words + 1)  break;
+    mesy_tdc2->Unpack(fpoint); if(fpoint>epoint + words + 1)  break;
 
     epoint += words+1; // This skips the rest of the event
     ///////////////////////////////////////////////////////////////////////////////////  
     //---------------------------------------------------
     for(int i=0;i<32;i++) {
-      ADC.ID[ADC.Nhits] = 1;
-      ADC.ChNum[ADC.Nhits] =i;
-      ADC.Data[ADC.Nhits++] = (Int_t) caen_adc1->fChValue[i];
+      ADC1.ID[ADC1.Nhits] = 1;
+      ADC1.ChNum[ADC1.Nhits] =i;
+      ADC1.Data[ADC1.Nhits++] = (Int_t) caen_adc1->fChValue[i];
+      
+      ADC2.ID[ADC2.Nhits] = 1;
+      ADC2.ChNum[ADC2.Nhits] =i;
+      ADC2.Data[ADC2.Nhits++] = (Int_t) caen_adc2->fChValue[i];
+      
+      ADC3.ID[ADC3.Nhits] = 1;
+      ADC3.ChNum[ADC3.Nhits] =i;
+      ADC3.Data[ADC3.Nhits++] = (Int_t) caen_adc3->fChValue[i];
+      
       ADC_vs_Chan->Fill(caen_adc1->fChValue[i],i);
       if(run<45) {
 	if(EventCounter==0 && ievent==0 && i==0)
@@ -460,17 +485,16 @@ void ReadPhysicsBuffer() {
       TDC_vs_Chan->Fill(caen_tdc1->fChValue[i],i);
     }	    
 
-    for (int i=1; i<=4; i++) {
-      mTDC.ID[mTDC.Nhits] = 1; //arbitrary value? --kgh
-      mTDC.ChNum[mTDC.Nhits] = i;
-      mTDC.Data[mTDC.Nhits++] = (Int_t)mesy_tdc2->fChValue[i];
+    for (int i=0; i<=31; i++) {
+      	mTDC.ID[mTDC.Nhits] = 1; //arbitrary value? --kgh
+      	mTDC.ChNum[mTDC.Nhits] = i;
+      	mTDC.Data[mTDC.Nhits++] = (Int_t)mesy_tdc2->fChValue[i];
     }
-    
-    mFP1[0] = (Int_t)mesy_tdc2->fChValue[1];
-    mFP1[1] = (Int_t)mesy_tdc2->fChValue[2];
-    mFP2[0] = (Int_t)mesy_tdc2->fChValue[3];
-    mFP2[1] = (Int_t)mesy_tdc2->fChValue[4];
- 
+    if ((Int_t)mesy_tdc2->fChValue[1]>600) mFP1[0] = (Int_t)mesy_tdc2->fChValue[1];
+    if ((Int_t)mesy_tdc2->fChValue[2]>600) mFP1[1] = (Int_t)mesy_tdc2->fChValue[2];
+    if ((Int_t)mesy_tdc2->fChValue[3]>600) mFP2[0] = (Int_t)mesy_tdc2->fChValue[3];
+    if ((Int_t)mesy_tdc2->fChValue[4]>600) mFP2[1] = (Int_t)mesy_tdc2->fChValue[4];
+  
     EventCounter++;
     
     DataTree->Fill();   
