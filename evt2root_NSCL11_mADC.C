@@ -52,10 +52,10 @@ Int_t run;
 
 // Set VME module names and positions
 //***must include ALL modules read in by TCL
-CAEN_ADC* caen_adc1 = new CAEN_ADC("First ADC", 2);
-CAEN_ADC* caen_adc2 = new CAEN_ADC("Second ADC", 3);
-CAEN_ADC* caen_adc3 = new CAEN_ADC("Third ADC", 6);
-CAEN_TDC* caen_tdc1 = new CAEN_TDC("First TDC", 5);
+CAEN_ADC* caen_adc1 = new CAEN_ADC("First ADC", 3);
+CAEN_ADC* caen_adc2 = new CAEN_ADC("Second ADC", 4);
+CAEN_ADC* caen_adc3 = new CAEN_ADC("Third ADC", 5);
+CAEN_TDC* caen_tdc1 = new CAEN_TDC("First TDC", 8);
 MESY_ADC* mesy_tdc2 = new MESY_ADC("Second TDC", 9);
 ///////using channels 1-4; 1&2 are two ends of fp1, 3&4 are fp2
 
@@ -503,7 +503,7 @@ void ReadPhysicsBuffer() {
 	  break;
 	}
       }
-      else {//Oct-Nov 2018
+      else if (run < 300) {//Oct-Nov 2018
 	switch(i) {
 	case 0 :
 	  if ((Int_t)caen_adc1->fChValue[i]>100)
@@ -541,6 +541,44 @@ void ReadPhysicsBuffer() {
 	  break;
 	}
       }
+      else {//Jan 2018
+	switch(i) {
+	case 0 :
+	  if ((Int_t)caen_adc1->fChValue[i]>100)
+	    TAC1 = (Int_t) caen_adc3->fChValue[i];
+	  break;
+	case 1 :
+	  if ((Int_t)caen_adc1->fChValue[i]>100)
+	    TAC2 = (Int_t) caen_adc3->fChValue[i];
+	  break;
+	case 2 :
+	  if ((Int_t)caen_adc1->fChValue[i]>100)
+	    TAC3 = (Int_t) caen_adc3->fChValue[i];
+	  break;
+	case 3 :
+	  if ((Int_t)caen_adc1->fChValue[i]>100)
+	    TAC4 = (Int_t)caen_adc3->fChValue[i];
+	  break;
+	case 4 :
+	  FP1 = (Int_t)caen_adc3->fChValue[i]; //Anode 1
+	  break;
+	case 5 :
+	  FP2 = (Int_t)caen_adc3->fChValue[i]; //Anode 2
+	  break;
+	case 6 :
+	  Scint1 = (Int_t)caen_adc3->fChValue[i];
+	  break;
+	case 9 :
+	  Scint2 = (Int_t)caen_adc3->fChValue[i];
+	  break;
+	case 8 :
+	  Cath = (Int_t)caen_adc3->fChValue[i];
+	  break;
+	case 10:
+	  Mon = (Int_t)caen_adc3->fChValue[i];
+	  break;
+	}
+      }
     }    
 
     ParticleID_Plastic_Anode->Fill(Scint1, FP1);
@@ -560,7 +598,7 @@ void ReadPhysicsBuffer() {
 	mTDC_vs_Chan->Fill(mesy_tdc2->fChValue[i],i);
     }
 
-    if ((Int_t)mesy_tdc2->fChValue[0] > 10) plastic_time = (Float_t)mesy_tdc2->fChValue[0]*NSPERCH;
+    if ((Int_t)mesy_tdc2->fChValue[7] > 10) plastic_time = (Float_t)mesy_tdc2->fChValue[0]*NSPERCH;
     if ((Int_t)mesy_tdc2->fChValue[1] > 10) FP1_time_right = (Float_t)mesy_tdc2->fChValue[1]*NSPERCH;
     if ((Int_t)mesy_tdc2->fChValue[2] > 10) FP1_time_left = (Float_t)mesy_tdc2->fChValue[2]*NSPERCH;
     if ((Int_t)mesy_tdc2->fChValue[3] > 10) FP2_time_right = (Float_t)mesy_tdc2->fChValue[3]*NSPERCH;
